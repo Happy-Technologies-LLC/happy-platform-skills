@@ -17,7 +17,24 @@ export const CATEGORIES = {
   ADMIN: 'admin',
   CATALOG: 'catalog',
   SECURITY: 'security',
-  REPORTING: 'reporting'
+  REPORTING: 'reporting',
+  DEVELOPMENT: 'development',
+  CSM: 'csm',
+  HRSD: 'hrsd',
+  KNOWLEDGE: 'knowledge',
+  SECOPS: 'secops',
+  GRC: 'grc',
+  ITOM: 'itom',
+  GENAI: 'genai',
+  SPM: 'spm',
+  PROCUREMENT: 'procurement',
+  LEGAL: 'legal',
+  DOCUMENT: 'document',
+  EA: 'ea',
+  FSM: 'fsm',
+  SAM: 'sam',
+  OTSM: 'otsm',
+  PSDS: 'psds'
 };
 
 // Supported platforms
