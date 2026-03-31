@@ -1,0 +1,28 @@
+{
+  "name": "happy-servicenow-skills",
+  "version": "1.2.0",
+  "description": "DEPRECATED: This package has been renamed to happy-platform-skills. Install happy-platform-skills instead.",
+  "main": "index.js",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./skills/*": "./node_modules/happy-platform-skills/skills/*",
+    "./loader": "./node_modules/happy-platform-skills/src/loader.js"
+  },
+  "bin": {
+    "sn-skills": "./cli.js"
+  },
+  "dependencies": {
+    "happy-platform-skills": "^2.0.0"
+  },
+  "keywords": [
+    "deprecated"
+  ],
+  "author": "Happy Technologies LLC",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Happy-Technologies-LLC/happy-platform-skills.git"
+  },
+  "homepage": "https://github.com/Happy-Technologies-LLC/happy-platform-skills#readme"
+}

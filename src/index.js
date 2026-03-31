@@ -1,9 +1,9 @@
 /**
- * Happy ServiceNow AI Skills
- * Platform-agnostic AI skills library for ServiceNow
+ * Happy Platform Skills
+ * Reusable development patterns and automation recipes for enterprise platforms
  *
  * @author Happy Technologies LLC
- * @license MIT
+ * @license Apache-2.0
  */
 
 export { SkillLoader } from './loader.js';

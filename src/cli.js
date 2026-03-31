@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Happy ServiceNow Skills CLI
+ * Happy Platform Skills CLI
  *
  * @author Happy Technologies LLC
  */
@@ -15,9 +15,9 @@ import { SkillValidator } from './validator.js';
 const registry = new SkillRegistry();
 
 program
-  .name('sn-skills')
-  .description('Happy ServiceNow AI Skills - Platform-agnostic skills library')
-  .version('1.0.0');
+  .name('hps')
+  .description('Happy Platform Skills - Reusable development patterns for enterprise platforms')
+  .version('2.0.0');
 
 // List command
 program
@@ -47,7 +47,7 @@ program
       return;
     }
 
-    console.log(chalk.bold('\n🎯 Happy ServiceNow AI Skills\n'));
+    console.log(chalk.bold('\n🎯 Happy Platform Skills\n'));
 
     // Group by category
     const byCategory = {};
@@ -229,7 +229,7 @@ program
     await registry.discover();
     const stats = registry.getStats();
 
-    console.log(chalk.bold('\n📊 Happy ServiceNow Skills Statistics\n'));
+    console.log(chalk.bold('\n📊 Happy Platform Skills Statistics\n'));
     console.log(`Total Skills:  ${chalk.cyan(stats.totalSkills)}`);
     console.log(`Categories:    ${chalk.cyan(stats.categories)}`);
     console.log(`Unique Tags:   ${chalk.cyan(stats.tags)}`);

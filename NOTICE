@@ -1,0 +1,47 @@
+Happy Platform Skills
+Copyright 2026 Happy Technologies LLC
+https://happy-tech.biz
+
+This product includes software developed by Happy Technologies LLC.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+================================================================================
+
+TRADEMARK NOTICES
+
+"Happy Platform Skills" is a trademark of Happy Technologies LLC.
+
+ServiceNow(R) is a registered trademark of ServiceNow, Inc.
+This project is not affiliated with, endorsed by, or sponsored by
+ServiceNow, Inc. Use of the ServiceNow name is for descriptive purposes
+only, to indicate that the skills in this library are designed to work
+with the ServiceNow platform.
+
+All other trademarks referenced herein are the property of their
+respective owners.
+
+================================================================================
+
+ORIGINALITY STATEMENT
+
+All skills, patterns, templates, and code in this library are original
+works authored by Happy Technologies LLC and its contributors. This
+project does not contain:
+
+- Copied ServiceNow documentation or sample code
+- ServiceNow Store application code
+- Any content subject to ServiceNow intellectual property restrictions
+
+Skills describe procedures and best practices based on publicly available
+platform APIs, ITIL frameworks, and original development experience.

@@ -1,7 +1,7 @@
 {
-  "name": "happy-servicenow-skills",
-  "version": "1.0.1",
-  "description": "Platform-agnostic AI skills library for ServiceNow - works with Claude, ChatGPT, and any agentic AI system",
+  "name": "happy-platform-skills",
+  "version": "2.0.0",
+  "description": "Reusable development patterns and automation recipes for enterprise platforms - works with Claude, ChatGPT, and any agentic AI system",
   "main": "src/index.js",
   "type": "module",
   "exports": {
@@ -10,6 +10,7 @@
     "./loader": "./src/loader.js"
   },
   "bin": {
+    "hps": "./src/cli.js",
     "sn-skills": "./src/cli.js"
   },
   "scripts": {
@@ -20,7 +21,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
-    "servicenow",
+    "platform-skills",
     "ai-skills",
     "claude",
     "chatgpt",
@@ -32,18 +33,19 @@
     "change-management",
     "cmdb",
     "automation",
+    "enterprise-platform",
     "happy-technologies",
     "skills-sh"
   ],
   "author": "Happy Technologies LLC",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Happy-Technologies-LLC/happy-servicenow-skills.git"
+    "url": "https://github.com/Happy-Technologies-LLC/happy-platform-skills.git"
   },
-  "homepage": "https://github.com/Happy-Technologies-LLC/happy-servicenow-skills#readme",
+  "homepage": "https://github.com/Happy-Technologies-LLC/happy-platform-skills#readme",
   "bugs": {
-    "url": "https://github.com/Happy-Technologies-LLC/happy-servicenow-skills/issues"
+    "url": "https://github.com/Happy-Technologies-LLC/happy-platform-skills/issues"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -63,6 +65,8 @@
     "templates/**/*",
     "docs/**/*",
     "LICENSE",
+    "NOTICE",
+    "CONTRIBUTING.md",
     "README.md"
   ]
 }

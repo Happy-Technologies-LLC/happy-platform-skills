@@ -1,10 +1,10 @@
 ---
-name: happy-servicenow-skills
-version: 1.0.0
+name: happy-platform-skills
+version: 2.0.0
 author: Happy Technologies LLC
-description: Platform-agnostic AI skills library for ServiceNow - 47 comprehensive skills for ITSM, CMDB, Catalog, Security, Reporting, and Development
+description: Reusable development patterns and automation recipes for enterprise platforms - 180+ skills across 23 categories
 tags:
-  - servicenow
+  - platform-skills
   - itsm
   - itil
   - cmdb
@@ -14,15 +14,15 @@ tags:
   - enterprise
 ---
 
-# Happy ServiceNow AI Skills
+# Happy Platform Skills
 
-A comprehensive library of platform-agnostic AI skills for ServiceNow development and administration. Works with Claude Code, Claude Desktop, ChatGPT, Cursor, and any agentic AI system.
+A comprehensive library of reusable development patterns and automation recipes for enterprise platforms. Current coverage focuses on the ServiceNow® platform. Works with Claude Code, Claude Desktop, ChatGPT, Cursor, and any agentic AI system.
 
 ## When to use this skill
 
 Use these skills when you need to:
-- "help me triage ServiceNow incidents"
-- "create a change request in ServiceNow"
+- "help me triage incidents"
+- "create a change request"
 - "write a business rule for incident assignment"
 - "set up a catalog item with approval workflow"
 - "query CMDB relationships"
@@ -96,29 +96,29 @@ Use these skills when you need to:
 
 ```bash
 # Install all skills
-npx skills add Happy-Technologies-LLC/happy-servicenow-skills --all
+npx skills add Happy-Technologies-LLC/happy-platform-skills --all
 
 # Install specific category
-npx skills add Happy-Technologies-LLC/happy-servicenow-skills -s "itsm/*"
+npx skills add Happy-Technologies-LLC/happy-platform-skills -s "itsm/*"
 
 # Install single skill
-npx skills add Happy-Technologies-LLC/happy-servicenow-skills -s "development/business-rules"
+npx skills add Happy-Technologies-LLC/happy-platform-skills -s "development/business-rules"
 ```
 
 ## Usage with npm
 
 ```bash
 # Install globally
-npm install -g happy-servicenow-skills
+npm install -g happy-platform-skills
 
 # Search skills
-npx sn-skills search "incident"
+npx hps search "incident"
 
 # Load skill content
-npx sn-skills load itsm/incident-triage
+npx hps load itsm/incident-triage
 
 # Validate skills
-npx sn-skills validate
+npx hps validate
 ```
 
 ## Skill Format
@@ -133,7 +133,7 @@ Each skill includes:
 
 ## MCP Tool Coverage
 
-These skills provide full parity with the ServiceNow MCP Server tools:
+These skills provide full parity with the platform MCP Server tools:
 - Query and CRUD operations (SN-Query-Table, SN-Create-Record, etc.)
 - Update set management (SN-Set-Update-Set, SN-Clone-Update-Set)
 - Script execution (SN-Execute-Background-Script)
@@ -148,4 +148,4 @@ See [CREATING_SKILLS.md](docs/CREATING_SKILLS.md) for contribution guidelines.
 
 ## License
 
-MIT - Happy Technologies LLC
+Apache-2.0 - Happy Technologies LLC
