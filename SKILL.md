@@ -40,7 +40,7 @@ Use these skills when you need to:
 - **natural-language-queries** - Plain English ServiceNow searches
 - **quick-reference** - Common operations cheat sheet
 
-### Development (12 skills)
+### Development (14 skills)
 - **business-rules** - Server-side automation scripts
 - **client-scripts** - Form manipulation and validation
 - **script-includes** - Reusable server-side libraries
@@ -53,6 +53,8 @@ Use these skills when you need to:
 - **scripted-rest-apis** - Custom REST endpoints
 - **automated-testing** - ATF and script testing
 - **performance-optimization** - Script optimization techniques
+- **mcp-server-installation** - Install and connect Happy Platform MCP
+- **fluent-sdk** - Hybrid ServiceNow development with NowSDK Fluent and MCP
 
 ### Administration (12 skills)
 - **update-set-management** - Configuration tracking and deployment
@@ -96,13 +98,10 @@ Use these skills when you need to:
 
 ```bash
 # Install all skills
-npx skills add Happy-Technologies-LLC/happy-platform-skills --all
-
-# Install specific category
-npx skills add Happy-Technologies-LLC/happy-platform-skills -s "itsm/*"
+npx skills add Happy-Technologies-LLC/happy-platform-skills --all --full-depth
 
 # Install single skill
-npx skills add Happy-Technologies-LLC/happy-platform-skills -s "development/business-rules"
+npx skills add Happy-Technologies-LLC/happy-platform-skills --full-depth -s "business-rules"
 ```
 
 ## Usage with npm

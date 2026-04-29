@@ -7,16 +7,18 @@ Use this template when contributing a new skill to Happy Platform Skills.
 ```
 skills/
   <category>/
-    my-skill.md        # Your skill file (required)
+    my-skill/
+      SKILL.md         # Your skill file (required)
 ```
 
-Each skill is a single Markdown file placed in the appropriate category directory.
+Each skill is a directory with a `SKILL.md` file placed in the appropriate category directory.
 
 ## Quick Start
 
 ```bash
 # 1. Copy the template into the right category
-cp templates/skill-template/skill.md skills/<category>/my-skill.md
+mkdir -p skills/<category>/my-skill
+cp templates/skill-template/TEMPLATE.md skills/<category>/my-skill/SKILL.md
 
 # 2. Edit the file — fill in frontmatter and all sections
 # 3. Validate

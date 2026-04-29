@@ -1,5 +1,5 @@
 ---
-name: kb-generation
+name: csm-kb-generation
 version: 1.0.0
 description: Generate knowledge articles from resolved CSM cases with customer-facing language, structured content, screenshot placeholders, and FAQ sections
 author: Happy Technologies LLC

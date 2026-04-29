@@ -1,5 +1,5 @@
 ---
-name: incident-summarization
+name: itsm-incident-summarization
 version: 1.0.0
 description: Generate comprehensive incident summaries with timeline, impact assessment, actions taken, and resolution details
 author: Happy Technologies LLC

@@ -1,5 +1,5 @@
 ---
-name: case-summarization
+name: csm-case-summarization
 version: 1.0.0
 description: Summarize CSM cases including timeline, interactions, resolution status, related tasks, and communications history
 author: Happy Technologies LLC

@@ -6,7 +6,8 @@ This guide walks you through creating your own skills for the library.
 
 1. Copy the template:
    ```bash
-   cp templates/skill-template.md skills/[category]/my-skill.md
+   mkdir -p skills/[category]/my-skill
+   cp templates/skill-template.md skills/[category]/my-skill/SKILL.md
    ```
 
 2. Edit the frontmatter:
@@ -25,7 +26,7 @@ This guide walks you through creating your own skills for the library.
 
 4. Validate:
    ```bash
-   npm run validate skills/[category]/my-skill.md
+   npm run validate skills/[category]/my-skill
    ```
 
 5. Test with an AI agent
@@ -191,7 +192,7 @@ curl -X GET \
 
 ```bash
 # Validate single skill
-npm run validate skills/category/my-skill.md
+npm run validate skills/category/my-skill
 
 # Validate all skills
 npm run validate

@@ -1,5 +1,5 @@
 ---
-name: sidebar-summarization
+name: fsm-sidebar-summarization
 version: 1.0.0
 description: Generate sidebar summaries for field technicians with key case context, asset history, customer details, and actionable next steps for mobile field service views
 author: Happy Technologies LLC

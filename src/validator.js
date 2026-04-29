@@ -186,7 +186,7 @@ export class SkillValidator {
    * @returns {string} Section content
    */
   getSectionContent(content, sectionName) {
-    const regex = new RegExp(`^##\\s+${sectionName}\\s*$([\\s\\S]*?)(?=^##\\s|$)`, 'im');
+    const regex = new RegExp(`^##\\s+${sectionName}\\s*$\\n?([\\s\\S]*?)(?=^##\\s|(?![\\s\\S]))`, 'im');
     const match = content.match(regex);
     return match ? match[1] : '';
   }

@@ -1,5 +1,5 @@
 ---
-name: suggested-steps
+name: csm-suggested-steps
 version: 1.0.0
 description: Generate suggested resolution steps for CSM cases based on product, issue type, and historical resolutions from similar cases
 author: Happy Technologies LLC

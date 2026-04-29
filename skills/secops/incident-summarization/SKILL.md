@@ -1,5 +1,5 @@
 ---
-name: incident-summarization
+name: secops-incident-summarization
 version: 1.0.0
 description: Generate executive and technical summaries for security incidents including threat classification, affected assets, containment status, and recommended actions
 author: Happy Technologies LLC

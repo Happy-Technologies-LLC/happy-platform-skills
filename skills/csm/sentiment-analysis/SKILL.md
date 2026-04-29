@@ -1,5 +1,5 @@
 ---
-name: sentiment-analysis
+name: csm-sentiment-analysis
 version: 1.0.0
 description: Analyze customer sentiment across CSM cases, communications, and interactions to track sentiment progression, identify escalation patterns, and flag at-risk cases
 author: Happy Technologies LLC

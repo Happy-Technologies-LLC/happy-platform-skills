@@ -35,21 +35,30 @@ export class SkillRegistry {
       if (!category.isDirectory()) continue;
 
       const categoryPath = join(SKILLS_DIR, category.name);
-      const files = await readdir(categoryPath);
+      const items = await readdir(categoryPath, { withFileTypes: true });
 
-      for (const file of files) {
-        if (!file.endsWith('.md')) continue;
+      for (const item of items) {
+        let skillPath;
+        let fullPath;
 
-        const skillPath = `${category.name}/${file.replace('.md', '')}`;
-        const fullPath = join(categoryPath, file);
+        if (item.isDirectory()) {
+          skillPath = `${category.name}/${item.name}`;
+          fullPath = join(categoryPath, item.name, 'SKILL.md');
+        } else if (item.name.endsWith('.md')) {
+          skillPath = `${category.name}/${item.name.replace('.md', '')}`;
+          fullPath = join(categoryPath, item.name);
+        } else {
+          continue;
+        }
 
         try {
           const content = await readFile(fullPath, 'utf-8');
           const { data: frontmatter } = matter(content);
 
+          const fallbackName = item.isDirectory() ? item.name : item.name.replace('.md', '');
           const skillInfo = {
             path: skillPath,
-            name: frontmatter.name || file.replace('.md', ''),
+            name: frontmatter.name || fallbackName,
             description: frontmatter.description || '',
             version: frontmatter.version || '1.0.0',
             author: frontmatter.author || 'Unknown',
@@ -63,7 +72,9 @@ export class SkillRegistry {
           this.skills.set(skillPath, skillInfo);
           this.indexSkill(skillInfo);
         } catch (error) {
-          console.warn(`Warning: Could not parse skill ${skillPath}: ${error.message}`);
+          if (error.code !== 'ENOENT') {
+            console.warn(`Warning: Could not parse skill ${skillPath}: ${error.message}`);
+          }
         }
       }
     }

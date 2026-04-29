@@ -1,5 +1,5 @@
 ---
-name: kb-generation
+name: fsm-kb-generation
 version: 1.0.0
 description: Generate field service knowledge articles from completed work orders including repair procedures, parts lists, safety notes, and troubleshooting guides
 author: Happy Technologies LLC

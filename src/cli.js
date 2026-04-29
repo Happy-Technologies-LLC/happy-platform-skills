@@ -190,7 +190,7 @@ program
     if (skillPath) {
       const skill = await SkillLoader.load(skillPath);
       const validator = new SkillValidator();
-      const result = validator.validate(skill.rawContent, skillPath);
+      const result = validator.validate(skill.sourceContent, skillPath);
 
       console.log(`\n${result.summary}\n`);
       result.errors.forEach(e => console.log(chalk.red(`  ❌ ${e}`)));

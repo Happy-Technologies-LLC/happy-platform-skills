@@ -19,14 +19,23 @@ export class SkillLoader {
    * @returns {Promise<Skill>} Parsed skill object
    */
   static async load(skillPath) {
-    const fullPath = join(SKILLS_DIR, `${skillPath}.md`);
+    const fullPath = join(SKILLS_DIR, skillPath, 'SKILL.md');
+    const legacyPath = join(SKILLS_DIR, `${skillPath}.md`);
 
     try {
       const content = await readFile(fullPath, 'utf-8');
       return this.parse(content, skillPath);
     } catch (error) {
       if (error.code === 'ENOENT') {
-        throw new Error(`Skill not found: ${skillPath}`);
+        try {
+          const content = await readFile(legacyPath, 'utf-8');
+          return this.parse(content, skillPath);
+        } catch (legacyError) {
+          if (legacyError.code === 'ENOENT') {
+            throw new Error(`Skill not found: ${skillPath}`);
+          }
+          throw legacyError;
+        }
       }
       throw error;
     }
@@ -71,6 +80,7 @@ export class SkillLoader {
 
       // Raw content for full access
       rawContent: body,
+      sourceContent: content,
       frontmatter: frontmatter,
 
       // Utility methods

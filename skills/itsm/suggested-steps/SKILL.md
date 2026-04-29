@@ -1,5 +1,5 @@
 ---
-name: suggested-steps
+name: itsm-suggested-steps
 version: 1.0.0
 description: Generate suggested resolution steps for incidents based on category, symptoms, historical similar tickets, and knowledge base articles
 author: Happy Technologies LLC

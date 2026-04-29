@@ -45,7 +45,7 @@ Current coverage focuses on the **ServiceNow®** platform, with 180+ skills acro
 npm install happy-platform-skills
 
 # skills.sh
-npx skills add Happy-Technologies-LLC/happy-platform-skills --all
+npx skills add Happy-Technologies-LLC/happy-platform-skills --all --full-depth
 ```
 
 ### Usage with Claude Code
@@ -138,7 +138,7 @@ console.log(skill.instructions);
 | `hrsd/case-summarization-approvals` | Summarize cases/requests for approvers |
 | `hrsd/interview-relevance` | Interview note and job description skill matching |
 
-### Development (15 skills)
+### Development (19 skills)
 
 | Skill | Description |
 |-------|-------------|
@@ -159,6 +159,8 @@ console.log(skill.instructions);
 | `development/test-generation` | Generate tests from requirements |
 | `development/ui-generation` | Generate UI components from descriptions |
 | `development/mcp-server` | Configure platform MCP server integration |
+| `development/mcp-server-installation` | Install and connect Happy Platform MCP |
+| `development/fluent-sdk` | Hybrid ServiceNow development with NowSDK Fluent and MCP |
 
 ### GenAI Platform (19 skills)
 
@@ -452,7 +454,7 @@ Skills are designed to work across multiple AI platforms:
 
 ## Related Projects
 
-- **[MCP Server for ServiceNow](https://github.com/nickzitzer/mcp-servicenow-nodejs)** — MCP server providing 40+ tools for platform automation
+- **[Happy Platform MCP](https://github.com/Happy-Technologies-LLC/happy-platform-mcp)** — MCP server providing ServiceNow platform automation tools
 - **[Happy Technologies](https://happy-tech.biz)** — Enterprise AI solutions
 
 ---
