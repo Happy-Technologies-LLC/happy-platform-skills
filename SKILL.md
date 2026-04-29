@@ -1,6 +1,6 @@
 ---
 name: happy-platform-skills
-version: 2.0.0
+version: 2.2.0
 author: Happy Technologies LLC
 description: Reusable development patterns and automation recipes for enterprise platforms - 180+ skills across 23 categories
 tags:

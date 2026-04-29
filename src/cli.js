@@ -8,16 +8,19 @@
 
 import { program } from 'commander';
 import chalk from 'chalk';
+import { createRequire } from 'module';
 import { SkillLoader } from './loader.js';
 import { SkillRegistry } from './registry.js';
 import { SkillValidator } from './validator.js';
 
 const registry = new SkillRegistry();
+const require = createRequire(import.meta.url);
+const packageJson = require('../package.json');
 
 program
   .name('hps')
   .description('Happy Platform Skills - Reusable development patterns for enterprise platforms')
-  .version('2.0.0');
+  .version(packageJson.version);
 
 // List command
 program

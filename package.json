@@ -1,6 +1,6 @@
 {
   "name": "happy-platform-skills",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Reusable development patterns and automation recipes for enterprise platforms - works with Claude, ChatGPT, and any agentic AI system",
   "main": "src/index.js",
   "type": "module",
@@ -10,14 +10,15 @@
     "./loader": "./src/loader.js"
   },
   "bin": {
-    "hps": "./src/cli.js",
-    "sn-skills": "./src/cli.js"
+    "hps": "src/cli.js",
+    "sn-skills": "src/cli.js"
   },
   "scripts": {
     "validate": "node src/validator.js",
     "list": "node src/cli.js list",
     "search": "node src/cli.js search",
     "build:registry": "node src/build-registry.js",
+    "publish:dry-run": "npm publish --dry-run",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
@@ -41,7 +42,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Happy-Technologies-LLC/happy-platform-skills.git"
+    "url": "git+https://github.com/Happy-Technologies-LLC/happy-platform-skills.git"
   },
   "homepage": "https://github.com/Happy-Technologies-LLC/happy-platform-skills#readme",
   "bugs": {
