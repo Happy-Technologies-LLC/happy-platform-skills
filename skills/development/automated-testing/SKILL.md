@@ -712,6 +712,7 @@ Parameters:
   query: id=com.glide.continuousdelivery
   fields: id,name,active
 ```
+The plugin is active when the row exists and `active` is the string `"active"` (not a boolean).
 
 2. The MCP user has `sn_cicd.sys_ci_automation` or `admin`:
 ```
@@ -973,7 +974,7 @@ pipeline {
           )
           def results = readJSON(text: response.content).result
 
-          if (env.PROGRESS_STATUS != '2' || results.test_suite_status != 'success') {
+          if (env.PROGRESS_STATUS != '2' || "${results.rolledup_test_failure_count}" != '0' || "${results.rolledup_test_error_count}" != '0') {
             error "ATF tests failed: ${results.rolledup_test_failure_count} failed, ${results.rolledup_test_error_count} errored"
           }
         }
@@ -1032,14 +1033,14 @@ jobs:
             -u "${{ secrets.SN_USERNAME }}:${{ secrets.SN_PASSWORD }}" \
             "${{ vars.SN_INSTANCE }}/api/sn_cicd/testsuite/results/${{ steps.wait.outputs.result_id }}")
 
-          SUITE_STATUS=$(echo "$RESPONSE" | jq -r '.result.test_suite_status')
+          # Gate on progress status and roll-up counts; a failed suite reports test_suite_status "failure".
           PASS=$(echo "$RESPONSE" | jq -r '.result.rolledup_test_success_count')
           FAIL=$(echo "$RESPONSE" | jq -r '.result.rolledup_test_failure_count')
           ERRORED=$(echo "$RESPONSE" | jq -r '.result.rolledup_test_error_count')
 
           echo "Results: $PASS passed, $FAIL failed, $ERRORED errored"
 
-          if [ "${{ steps.wait.outputs.status }}" != "2" ] || [ "$SUITE_STATUS" != "success" ]; then
+          if [ "${{ steps.wait.outputs.status }}" != "2" ] || [ "$FAIL" != "0" ] || [ "$ERRORED" != "0" ]; then
             echo "::error::ATF tests failed"
             exit 1
           fi
