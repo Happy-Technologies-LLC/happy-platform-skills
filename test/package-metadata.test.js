@@ -7,7 +7,7 @@ const packageJson = JSON.parse(
 
 describe('published dependency safety', () => {
   test('pins a non-vulnerable js-yaml version as a direct production dependency', () => {
-    expect(packageJson.dependencies['js-yaml']).toBe('3.15.0');
+    expect(packageJson.dependencies['js-yaml']).toBe('3.15.2');
     expect(packageJson.overrides).toBeUndefined();
   });
 

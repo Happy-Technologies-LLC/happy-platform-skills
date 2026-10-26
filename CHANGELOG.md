@@ -4,6 +4,12 @@ All notable changes to Happy Platform Skills are documented here.
 
 ## 2.5.0 - 2026-10-26
 
+### Security
+
+- Pin `js-yaml` 3.15.2 for [GHSA-5p4m-2wfm-xmqj](https://github.com/advisories/GHSA-5p4m-2wfm-xmqj)
+  and [GHSA-2883-xcg3-v3hh](https://github.com/advisories/GHSA-2883-xcg3-v3hh)
+  (CPU exhaustion in YAML parsing; previously 3.15.0).
+
 ### Changed
 
 - Aligned catalog guidance with the versioned Happy Platform MCP v6.1 contract

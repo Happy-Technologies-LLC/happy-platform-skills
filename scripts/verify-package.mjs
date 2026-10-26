@@ -82,11 +82,11 @@ try {
   const installedPackageJson = JSON.parse(
     await readFile(join(consumerDir, 'node_modules', 'happy-platform-skills', 'package.json'), 'utf8')
   );
-  assert(installedPackageJson.dependencies['js-yaml'] === '3.15.0', 'Published package must pin js-yaml 3.15.0');
+  assert(installedPackageJson.dependencies['js-yaml'] === '3.15.2', 'Published package must pin js-yaml 3.15.2');
 
   const dependencyTree = JSON.parse(run('npm', ['ls', 'js-yaml', '--all', '--json'], consumerDir));
   const installedJsYaml = dependencyTree.dependencies?.['happy-platform-skills']?.dependencies?.['js-yaml'];
-  assert(installedJsYaml?.version === '3.15.0', 'Clean consumer did not resolve js-yaml 3.15.0');
+  assert(installedJsYaml?.version === '3.15.2', 'Clean consumer did not resolve js-yaml 3.15.2');
 
   run(process.execPath, [
     '--input-type=module',
