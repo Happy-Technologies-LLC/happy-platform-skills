@@ -18,7 +18,7 @@ The root npm package intentionally excludes this migration directory. Publishing
 From the repository root:
 
 ```bash
-npm test -- --runInBand test/migration-shim.test.js
+npm test -- test/migration-shim.test.js
 cd migration/happy-servicenow-skills
 npm pack --dry-run
 npm publish --dry-run

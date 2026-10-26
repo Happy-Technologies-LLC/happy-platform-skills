@@ -44,13 +44,13 @@ async function executableNaturalLanguageBlocks() {
   return blocks;
 }
 
-describe('MCP v5.1 natural-language documentation contract', () => {
+describe('MCP v6.1 natural-language documentation contract', () => {
   test('ships parser-verified atomic fixtures', async () => {
     const fixture = JSON.parse(await readFile(
-      new URL('../contracts/happy-platform-mcp-5.1.0-natural-language.json', import.meta.url),
+      new URL('../contracts/happy-platform-mcp-6.1.0-natural-language.json', import.meta.url),
       'utf8'
     ));
-    expect(fixture.version).toBe('5.1.0');
+    expect(fixture.version).toBe('6.1.0');
     expect(fixture.source).toBe('src/natural-language.js');
     expect(fixture.supported.length).toBeGreaterThanOrEqual(12);
     for (const entry of fixture.supported) {
@@ -87,7 +87,7 @@ describe('MCP v5.1 natural-language documentation contract', () => {
 
   test('every executable catalog search is an exact parser-verified atomic fixture', async () => {
     const fixture = JSON.parse(await readFile(
-      new URL('../contracts/happy-platform-mcp-5.1.0-natural-language.json', import.meta.url),
+      new URL('../contracts/happy-platform-mcp-6.1.0-natural-language.json', import.meta.url),
       'utf8'
     ));
     const supported = new Map(fixture.supported.map(entry => [

@@ -28,7 +28,7 @@ Run every release gate:
 
 ```bash
 npm ci
-npm test -- --runInBand
+npm test
 npm run validate
 npm run contract:check
 npm run contract:nl-check

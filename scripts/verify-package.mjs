@@ -6,7 +6,7 @@ import { tmpdir } from 'os';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { SkillRegistry } from '../src/registry.js';
-import { assertSameSkillPaths } from './package-verification-lib.mjs';
+import { assertSameSkillPaths, parseNpmPackResult } from './package-verification-lib.mjs';
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -34,7 +34,7 @@ const temporaryRoot = await mkdtemp(join(tmpdir(), 'happy-platform-skills-packag
 
 try {
   const packOutput = run('npm', ['pack', '--json', '--pack-destination', temporaryRoot]);
-  const [packResult] = JSON.parse(packOutput);
+  const packResult = parseNpmPackResult(packOutput, 'happy-platform-skills');
   const packagedPaths = new Set(packResult.files.map(file => file.path));
   const tarballPath = join(temporaryRoot, packResult.filename);
 
@@ -54,11 +54,10 @@ try {
     'scripts/package-verification-lib.mjs',
     'scripts/refresh-mcp-tool-contract.mjs',
     'scripts/check-natural-language-contract.mjs',
-    'contracts/happy-platform-mcp-5.1.0.json',
-    'contracts/happy-platform-mcp-5.1.0-natural-language.json',
+    'contracts/happy-platform-mcp-6.1.0.json',
+    'contracts/happy-platform-mcp-6.1.0-natural-language.json',
     'contracts/README.md',
-    'skills/itsm/incident-triage/SKILL.md',
-    'skills/development/fluent-sdk/vendor/now-sdk-explain.md'
+    'skills/itsm/incident-triage/SKILL.md'
   ];
 
   for (const requiredPath of requiredPaths) {

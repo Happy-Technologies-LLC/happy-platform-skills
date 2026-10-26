@@ -5,7 +5,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { SkillValidator } from '../src/validator.js';
 
-const contractUrl = new URL('../contracts/happy-platform-mcp-5.1.0.json', import.meta.url);
+const contractUrl = new URL('../contracts/happy-platform-mcp-6.1.0.json', import.meta.url);
 const contract = JSON.parse(await readFile(contractUrl, 'utf8'));
 
 async function catalogMarkdown() {
@@ -94,23 +94,31 @@ This procedure contains enough detail to satisfy the fixture validator.
 `;
 }
 
-describe('Happy Platform MCP v5.1.0 tool contract', () => {
-  test('contains exactly 55 unique tools and source metadata', () => {
+describe('Happy Platform MCP v6.1.0 tool contract', () => {
+  test('contains exactly 60 unique tools and source metadata', () => {
     expect(contract.schemaVersion).toBe(1);
     expect(contract.package).toBe('happy-platform-mcp');
-    expect(contract.version).toBe('5.1.0');
+    expect(contract.version).toBe('6.1.0');
     expect(contract.source).toEqual(expect.objectContaining({
       repository: 'Happy-Technologies-LLC/happy-platform-mcp',
       files: expect.arrayContaining([
         'src/mcp-server-consolidated.js',
         'src/docs/tool-definitions.js',
-        'src/instance-tools.js'
+        'src/instance-tools.js',
+        'src/cicd-atf.js'
       ])
     }));
-    expect(contract.tools).toHaveLength(55);
-    expect(new Set(contract.tools).size).toBe(55);
+    expect(contract.tools).toHaveLength(60);
+    expect(new Set(contract.tools).size).toBe(60);
     expect(contract.tools).toContain('SN-Register-Instance');
     expect(contract.tools.filter(name => name.startsWith('SN-Docs-'))).toHaveLength(5);
+    expect(contract.tools).toEqual(expect.arrayContaining([
+      'SN-Run-ATF-Test',
+      'SN-Run-ATF-Suite',
+      'SN-Get-CICD-Progress',
+      'SN-Get-ATF-Results',
+      'SN-Get-ATF-Test-Logs'
+    ]));
   });
 
   test('rejects an unsupported frontmatter MCP tool with path and name', () => {
@@ -161,7 +169,7 @@ describe('Happy Platform MCP v5.1.0 tool contract', () => {
     expect(result.errors).toEqual([]);
   });
 
-  test('natural-language search examples use the v5.1 table argument', async () => {
+  test('natural-language search examples use the table argument', async () => {
     const errors = (await catalogMarkdown()).flatMap(({ path, content }) =>
       naturalLanguageSearchSchemaErrors(path, content));
     expect(errors).toEqual([]);
@@ -222,17 +230,18 @@ Parameters:
     try {
       const sourceRoot = join(temporaryRoot, 'mcp');
       await mkdir(join(sourceRoot, 'src', 'docs'), { recursive: true });
-      await writeFile(join(sourceRoot, 'package.json'), JSON.stringify({ version: '5.1.0' }));
+      await writeFile(join(sourceRoot, 'package.json'), JSON.stringify({ version: '6.1.0' }));
       await writeFile(join(sourceRoot, 'src', 'mcp-server-consolidated.js'), "({ name: 'SN-Zeta' });\n({ name: 'SN-Alpha' });\n");
       await writeFile(join(sourceRoot, 'src', 'docs', 'tool-definitions.js'), "({ name: 'SN-Docs-One' });\n");
       await writeFile(join(sourceRoot, 'src', 'instance-tools.js'), "const TOOL_NAME = 'SN-Register-Instance';\n");
+      await writeFile(join(sourceRoot, 'src', 'cicd-atf.js'), "({ name: 'SN-Run-ATF-Test' });\n");
       const output = join(temporaryRoot, 'contract.json');
       const script = new URL('../scripts/refresh-mcp-tool-contract.mjs', import.meta.url);
 
       const refresh = spawnSync(process.execPath, [script.pathname, '--source', sourceRoot, '--output', output], { encoding: 'utf8' });
       expect(refresh.status).toBe(0);
       const generated = JSON.parse(await readFile(output, 'utf8'));
-      expect(generated.tools).toEqual(['SN-Alpha', 'SN-Docs-One', 'SN-Register-Instance', 'SN-Zeta']);
+      expect(generated.tools).toEqual(['SN-Alpha', 'SN-Docs-One', 'SN-Register-Instance', 'SN-Run-ATF-Test', 'SN-Zeta']);
 
       const check = spawnSync(process.execPath, [script.pathname, '--source', sourceRoot, '--output', output, '--check'], { encoding: 'utf8' });
       expect(check.status).toBe(0);
@@ -242,17 +251,17 @@ Parameters:
 
       const sentinel = '{"sentinel":true}\n';
       await writeFile(output, sentinel);
-      await writeFile(join(sourceRoot, 'package.json'), JSON.stringify({ version: '5.2.0' }));
+      await writeFile(join(sourceRoot, 'package.json'), JSON.stringify({ version: '6.2.0' }));
       const mismatch = spawnSync(process.execPath, [
         script.pathname,
         '--source', sourceRoot,
         '--output', output,
-        '--expected-version', '5.1.0'
+        '--expected-version', '6.1.0'
       ], { encoding: 'utf8' });
       expect(mismatch.status).not.toBe(0);
       expect(await readFile(output, 'utf8')).toBe(sentinel);
 
-      const versionedOutput = join(temporaryRoot, 'happy-platform-mcp-5.1.0.json');
+      const versionedOutput = join(temporaryRoot, 'happy-platform-mcp-6.1.0.json');
       await writeFile(versionedOutput, sentinel);
       const filenameMismatch = spawnSync(process.execPath, [
         script.pathname,

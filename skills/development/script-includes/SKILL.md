@@ -1,6 +1,6 @@
 ---
 name: script-includes
-version: 1.0.1
+version: 1.0.2
 description: Comprehensive guide to developing Script Includes - class-based, client-callable (GlideAjax), inheritance patterns, and best practices
 author: Happy Technologies LLC
 tags: [development, script-includes, scripting, server-side, classes, reusability]
@@ -1455,7 +1455,7 @@ IncidentService.prototype = {
 | `SN-Execute-Background-Script` | Test script includes |
 | `SN-Get-Table-Schema` | Explore sys_script_include fields |
 
-Happy Platform MCP 5.1 has no automatic watch or synchronization tool. For
+Happy Platform MCP 6.1 has no automatic watch or synchronization tool. For
 local development, retrieve `script`, `sys_updated_on`, and `sys_mod_count` with
 `SN-Get-Record`; edit locally; retrieve them again to detect conflicts; then
 push only the reviewed `script` field with `SN-Update-Record`. Include the

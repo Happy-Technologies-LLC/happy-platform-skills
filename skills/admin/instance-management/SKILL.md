@@ -1,7 +1,7 @@
 ---
 name: instance-management
-version: 1.1.1
-description: Manage and safely route Happy Platform MCP v5.1 operations across ServiceNow instances
+version: 1.1.2
+description: Manage and safely route Happy Platform MCP v6.1 operations across ServiceNow instances
 author: Happy Technologies LLC
 tags: [admin, instance, multi-instance, environment, configuration]
 platforms: [claude-code, claude-desktop, cursor, any]
@@ -19,11 +19,11 @@ estimated_time: 5-10 minutes
 
 ## Overview
 
-Happy Platform MCP v5.1 separates persistent registration from runtime routing. Local CLI commands manage a metadata-only user registry and keychain-backed credentials. MCP tools select a target for the current session or for one explicit call. This separation prevents one workflow from accidentally redirecting another.
+Happy Platform MCP v6.1 separates persistent registration from runtime routing. Local CLI commands manage a metadata-only user registry and keychain-backed credentials. MCP tools select a target for the current session or for one explicit call. This separation prevents one workflow from accidentally redirecting another.
 
 ## Prerequisites
 
-- Happy Platform MCP v5.1 configured through `development/mcp-server-installation`
+- Happy Platform MCP v6.1 configured through `development/mcp-server-installation`
 - One or more instances added with the local interactive CLI
 - Appropriate ServiceNow roles for the intended read or write
 
@@ -45,7 +45,7 @@ Tool: SN-Set-Instance
 Parameters: none
 ```
 
-There is no separate MCP list tool in v5.1; parameterless `SN-Set-Instance` is the supported listing operation.
+There is no separate MCP list tool in v6.1; parameterless `SN-Set-Instance` is the supported listing operation.
 
 ### Step 2: Confirm the Session Target
 

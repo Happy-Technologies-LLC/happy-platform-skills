@@ -8,7 +8,8 @@ const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const sourceFiles = [
   'src/mcp-server-consolidated.js',
   'src/docs/tool-definitions.js',
-  'src/instance-tools.js'
+  'src/instance-tools.js',
+  'src/cicd-atf.js'
 ];
 
 function option(name, fallback) {
@@ -47,7 +48,7 @@ export function serializeContract(contract) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const sourceRoot = resolve(option('--source', join(repositoryRoot, '..', 'happy-platform-mcp')));
-  const outputPath = resolve(option('--output', join(repositoryRoot, 'contracts', 'happy-platform-mcp-5.1.0.json')));
+  const outputPath = resolve(option('--output', join(repositoryRoot, 'contracts', 'happy-platform-mcp-6.1.0.json')));
   const contract = await buildContract(sourceRoot);
   const filenameVersion = basename(outputPath).match(/^happy-platform-mcp-(\d+\.\d+\.\d+)\.json$/)?.[1];
   const expectedVersion = option('--expected-version', filenameVersion);

@@ -1,6 +1,6 @@
 ---
 name: health-safety-summarization
-version: 1.0.3
+version: 1.0.4
 description: Summarize Health and Safety incidents with injury details, root cause analysis, OSHA reporting requirements, corrective actions, and workplace hazard tracking
 author: Happy Technologies LLC
 tags: [hrsd, health-safety, incident, osha, injury, hazard, investigation, corrective-action, workplace-safety]
@@ -281,7 +281,7 @@ Parameters:
 | Query Investigations | SN-Query-Table | GET /api/now/table/sn_hr_hs_investigation |
 | Query Hazards | SN-Query-Table | GET /api/now/table/sn_hr_hs_hazard |
 | Query Corrective Actions | SN-Query-Table | GET /api/now/table/sn_hr_hs_corrective_action |
-| Aggregate Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Aggregate Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

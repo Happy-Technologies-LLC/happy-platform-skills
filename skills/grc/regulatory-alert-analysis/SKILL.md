@@ -1,6 +1,6 @@
 ---
 name: regulatory-alert-analysis
-version: 1.0.2
+version: 1.0.3
 description: Analyze regulatory alerts for business impact, identify affected policies, controls, and citations, and generate impact assessments with recommended actions for compliance teams
 author: Happy Technologies LLC
 tags: [grc, regulatory, alert, compliance, impact-assessment, citations, policy, regulatory-change]
@@ -495,7 +495,7 @@ Parameters:
 | Query Policies | SN-Query-Table | GET /api/now/table/sn_compliance_policy |
 | Create Change Tasks | SN-Create-Record | POST /api/now/table/sn_regulatory_change_task |
 | Update Alert | SN-Update-Record | PATCH /api/now/table/sn_regulatory_alert |
-| Impact Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Impact Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

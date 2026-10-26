@@ -1,6 +1,6 @@
 ---
 name: tprm-issue-summarization
-version: 1.0.2
+version: 1.0.3
 description: Summarize Third-Party Risk Management issues including vendor risk exposure, assessment gaps, remediation status, and compliance impact across the TPRM lifecycle
 author: Happy Technologies LLC
 tags: [grc, tprm, vendor-risk, third-party, assessment, remediation, compliance, risk-exposure]
@@ -335,7 +335,7 @@ Parameters:
 | Search Issues by Theme | SN-Natural-Language-Search | N/A |
 | Query Assessments | SN-Query-Table | GET /api/now/table/sn_tprm_assessment |
 | Query Vendor Assessments | SN-Query-Table | GET /api/now/table/sn_tprm_vendor_assessment |
-| Aggregate Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Aggregate Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 | Post Summary Notes | SN-Add-Work-Notes | PATCH /api/now/table/{table}/{sys_id} |
 

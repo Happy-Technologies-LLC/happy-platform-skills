@@ -16,19 +16,19 @@ describe('published dependency safety', () => {
   });
 });
 
-describe('2.4.0 package metadata', () => {
+describe('2.5.0 package metadata', () => {
   test('ships the canonical root skill with synchronized release metadata', async () => {
     const rootSkill = await readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
     const changelog = await readFile(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
 
-    expect(packageJson.version).toBe('2.4.0');
+    expect(packageJson.version).toBe('2.5.0');
     expect(packageJson.files).toContain('SKILL.md');
     expect(packageJson.files).toContain('CHANGELOG.md');
-    expect(rootSkill).toMatch(/^version: 2\.4\.0$/m);
+    expect(rootSkill).toMatch(/^version: 2\.5\.0$/m);
     expect(rootSkill).toMatch(/184 skills across 23 categories/);
-    expect(rootSkill).toMatch(/exactly 55 live MCP tools/);
+    expect(rootSkill).toMatch(/exactly 60 live MCP tools/);
     expect(rootSkill).toMatch(/six docs-only tools/);
-    expect(changelog).toMatch(/^## 2\.4\.0 - 2026-07-28$/m);
-    expect(changelog).not.toMatch(/^## 2\.4\.0 - Unreleased$/m);
+    expect(changelog).toMatch(/^## 2\.5\.0 - 2026-10-26$/m);
+    expect(changelog).not.toMatch(/^## 2\.5\.0 - Unreleased$/m);
   });
 });

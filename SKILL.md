@@ -1,8 +1,8 @@
 ---
 name: happy-platform-skills
-version: 2.4.0
+version: 2.5.0
 author: Happy Technologies LLC
-description: Reusable enterprise platform instructions - 184 skills across 23 categories with a versioned Happy Platform MCP v5.1 contract
+description: Reusable enterprise platform instructions - 184 skills across 23 categories with a versioned Happy Platform MCP v6.1 contract
 tags:
   - platform-skills
   - servicenow
@@ -72,9 +72,9 @@ Load one skill with:
 npx hps load itsm/incident-triage
 ```
 
-## Happy Platform MCP v5.1 contract
+## Happy Platform MCP v6.1 contract
 
-The bundled contract contains exactly 55 live MCP tools. Docs-only startup
+The bundled contract contains exactly 60 live MCP tools. Docs-only startup
 exposes exactly six docs-only tools: the five documentation tools plus
 `SN-Register-Instance`.
 

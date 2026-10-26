@@ -1,6 +1,6 @@
 ---
 name: smart-assessment
-version: 1.0.2
+version: 1.0.3
 description: "Configure AI-assisted assessments with metric design, scoring, conditional logic, result analysis, and GRC or HR integrations."
 author: Happy Technologies LLC
 tags: [admin, assessment, survey, scoring, metrics, ai-assisted, grc, hr, risk, compliance]
@@ -381,7 +381,7 @@ Parameters:
 | Query Results | SN-Query-Table | GET /api/now/table/asmt_metric_result |
 | Query Instances | SN-Query-Table | GET /api/now/table/asmt_assessment_instance |
 | Update Metrics | SN-Update-Record | PATCH /api/now/table/asmt_metric |
-| Result Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Result Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

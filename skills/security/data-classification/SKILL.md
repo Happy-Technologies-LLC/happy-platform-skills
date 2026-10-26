@@ -1,6 +1,6 @@
 ---
 name: data-classification
-version: 1.0.2
+version: 1.0.4
 description: Data security and classification - identifying sensitive fields, implementing data masking, PII/PHI discovery, and applying classification labels
 author: Happy Technologies LLC
 tags: [security, data-classification, pii, phi, masking, privacy, gdpr, compliance]
@@ -802,7 +802,7 @@ Parameters:
 |-----------|----------|---------------|
 | Discover Schema | SN-Discover-Table-Schema | GET /sys_dictionary |
 | Query Fields | SN-Query-Table | GET /sys_dictionary |
-| Run Scans | SN-Execute-Background-Script | Via sys_trigger |
+| Run Scans | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Create Classification | SN-Create-Record | POST /sys_properties |
 | Update Classification | SN-Update-Record | PATCH /sys_properties |
 | Get Table Info | SN-Get-Table-Schema | GET /sys_dictionary |

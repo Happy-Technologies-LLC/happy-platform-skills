@@ -1,6 +1,6 @@
 ---
 name: servicenow-docs-mcp
-version: 1.0.1
+version: 1.0.2
 description: Add or maintain ServiceNowDocs search capabilities in Happy Platform MCP, including live GitHub lookup, optional local SQLite FTS indexing, and optional vector search
 author: Happy Technologies LLC
 tags: [development, mcp, servicenow-docs, documentation, search, sqlite, fts, vector, github, rag]
@@ -46,19 +46,23 @@ For installing the MCP server itself, use `development/mcp-server-installation`.
 
 - Happy Platform MCP source checkout
 - Node.js >= 20
-- Network access to `https://github.com/ServiceNow/ServiceNowDocs` for live mode or sync
+- Network access to `https://raw.githubusercontent.com/ServiceNow/ServiceNowDocs` for live mode or sync
 - Optional `better-sqlite3` support only when local indexing is enabled
 - Optional embedding provider only when vector search is enabled
 
-### v5.1 Docs-Only Bootstrap
+### v6.1 Docs-Only Bootstrap
 
-When no registry/config and no legacy environment credentials are present, the stdio server automatically falls back to docs-only mode. Force this mode with `HAPPY_MCP_DOCS_ONLY=true`. The v5.1 `--docs-only` flag does not reliably override a registry that already exists and must not be used for this workflow.
+When no registry/config and no legacy environment credentials are present, the stdio server automatically falls back to docs-only mode. Force this mode with `HAPPY_MCP_DOCS_ONLY=true`. The 6.1.0 `--docs-only` argument does not force docs-only mode, does not override a registry that already exists, and must not be used for this workflow.
 
 Docs-only mode exposes `SN-Docs-Families`, `SN-Docs-Status`, `SN-Docs-Sync`,
 `SN-Docs-Search`, and `SN-Docs-Get`, plus `SN-Register-Instance`.
 `SN-Register-Instance` is metadata-only and rejects secret fields. A normal live server reloads the registry after a successful registration; restart a docs-only process before expecting live ServiceNow tools.
 
-Credential-backed bootstrap has a v5.1 ordering constraint: registration expects a credential reference, but the local credential-set command expects the instance name to exist. Use local interactive `happy-platform-mcp instance add` for Basic, OAuth `client_credentials`, and OAuth password registrations. Direct registration is reliable for public `authorization_code`, or when an administrator has created externally preprovisioned deterministic keychain refs. Never ask a user or agent to put credential material in the tool call.
+Credential-backed bootstrap has a 6.1.0 ordering constraint: registration expects a credential reference, but the local credential-set command expects the instance name to exist. Use local interactive `happy-platform-mcp instance add` for Basic, OAuth `client_credentials`, and OAuth password registrations. Direct registration is reliable for public `authorization_code`, or when an administrator has created externally preprovisioned deterministic keychain refs. Never ask a user or agent to put credential material in the tool call.
+
+### Upgrading Docs Settings from 5.x
+
+Since 6.0, docs requests are unauthenticated and fetch only from `raw.githubusercontent.com/ServiceNow/ServiceNowDocs`, without following redirects, and accept only families and branches listed in its `main/llms.txt`. Remove `GITHUB_TOKEN` and `docs.githubToken` settings; authenticated docs retrieval is not supported. Existing local docs caches are discarded on first open, so re-run `SN-Docs-Sync` for each family you need offline.
 
 ## Procedure
 
@@ -133,7 +137,7 @@ QMD can be useful for personal experimentation or offline training workflows, bu
 
 Prefer:
 
-- GitHub API or raw GitHub content for live reads
+- Raw GitHub content from the pinned `ServiceNow/ServiceNowDocs` origin for live reads
 - SQLite FTS5 for optional local keyword search
 - sqlite-vec or a compatible vector adapter for optional semantic search
 - Simple chunking for markdown sections and headings
@@ -198,7 +202,7 @@ Also run a no-SQLite smoke check by temporarily removing or hiding `better-sqlit
 |-------|-------|------------|
 | Docs tools crash on startup | SQLite loaded eagerly | Lazy-load SQLite only when local index is enabled |
 | `SN-Docs-Search` returns setup hint | Local index is disabled | Enable `HAPPY_DOCS_ENABLE_LOCAL_INDEX=true` or use live `SN-Docs-Get` |
-| Sync fails against GitHub | Rate limit or network issue | Add GitHub token support or retry later |
+| Sync fails against GitHub | Rate limit, network issue, or a family/branch not listed in `main/llms.txt` | Retry later and pick a family from `SN-Docs-Families`; do not add a GitHub token, which 6.x does not send |
 | Docker image grows unexpectedly | Synced docs or DB copied into image | Keep cache paths outside repo and add generated files to ignore rules |
 | Embedding calls happen unexpectedly | Vector provider enabled by default | Default provider to `none` and require explicit opt-in |
 

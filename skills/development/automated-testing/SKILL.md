@@ -1,6 +1,6 @@
 ---
 name: automated-testing
-version: 1.0.0
+version: 1.1.0
 description: Comprehensive Automated Test Framework (ATF) guide for creating, managing, and executing automated tests in ServiceNow
 author: Happy Technologies LLC
 tags: [development, testing, atf, automation, quality, tdd, ci-cd]
@@ -12,12 +12,23 @@ tools:
     - SN-Update-Record
     - SN-Execute-Background-Script
     - SN-Get-Table-Schema
+    - SN-Run-ATF-Test
+    - SN-Run-ATF-Suite
+    - SN-Get-CICD-Progress
+    - SN-Get-ATF-Results
+    - SN-Get-ATF-Test-Logs
   rest:
     - /api/now/table/sys_atf_test
     - /api/now/table/sys_atf_test_suite
     - /api/now/table/sys_atf_step
     - /api/now/table/sys_atf_test_result
     - /api/now/table/sys_atf_step_config
+    - /api/sn_cicd/tests/run_test
+    - /api/sn_cicd/testsuite/run
+    - /api/sn_cicd/progress/{progress_id}
+    - /api/sn_cicd/tests/test/results/{result_id}
+    - /api/sn_cicd/tests/test/results/{result_id}/logs
+    - /api/sn_cicd/testsuite/results/{result_id}
   native:
     - Bash
     - Read
@@ -36,7 +47,7 @@ The Automated Test Framework (ATF) is ServiceNow's native testing solution for v
 - Writing assertions and validations
 - Managing test data setup and cleanup
 - Implementing parameterized tests
-- Running tests manually and on schedule
+- Running tests and suites with the ATF tools (CI/CD REST API) and reading results and logs
 - Analyzing test results and failures
 - Integrating ATF with CI/CD pipelines
 - Best practices for maintainable, reliable tests
@@ -48,7 +59,8 @@ The Automated Test Framework (ATF) is ServiceNow's native testing solution for v
 ## Prerequisites
 
 - **Roles:** `atf_test_admin` (full access) or `atf_test_designer` (create/edit tests)
-- **Plugins:** Automated Test Framework (com.snc.automated_testing)
+- **Plugins:** Automated Test Framework (com.snc.automated_testing); CI/CD REST API (`com.glide.continuousdelivery`) to run tests with the ATF tools
+- **Running tests:** `sn_cicd.sys_ci_automation` or `admin` role for the MCP user, and `sn_atf.runner.enabled` = `true` (see Step 7.1)
 - **Access:** sys_atf_test, sys_atf_test_suite, sys_atf_step tables
 - **Knowledge:** Basic understanding of ServiceNow scripting (GlideRecord, client scripts)
 - **Related Skills:** `admin/script-execution`, `admin/update-set-management`
@@ -688,83 +700,116 @@ Parameters:
 
 ### Phase 7: Running Tests
 
-#### Step 7.1: Manual Execution
+Run tests with the ATF tools (happy-platform-mcp 6.1.0+), which call the CI/CD REST API (`/api/sn_cicd`). Do not start runs from background or scheduled scripts. `SN-Run-ATF-Test` and `SN-Run-ATF-Suite` execute tests on the instance (tests can create, change, or roll back data); the other three tools only read.
 
-**Run Single Test:**
+#### Step 7.1: Preflight
+
+1. The CI/CD REST API plugin is active:
 ```
-Tool: SN-Execute-Background-Script
+Tool: SN-Query-Table
 Parameters:
-  script: |
-    var runner = new sn_atf.ATFTestRunner();
-    runner.setTest('[test_sys_id]');
-    var resultId = runner.run();
-    gs.info('ATF: Test execution started. Result ID: ' + resultId);
-  description: Run ATF test manually
+  table_name: v_plugin
+  query: id=com.glide.continuousdelivery
+  fields: id,name,active
 ```
 
-**Run Test Suite:**
+2. The MCP user has `sn_cicd.sys_ci_automation` or `admin`:
 ```
-Tool: SN-Execute-Background-Script
+Tool: SN-Query-Table
 Parameters:
-  script: |
-    var suiteRunner = new sn_atf.ATFTestSuiteRunner();
-    suiteRunner.setSuite('[suite_sys_id]');
-    var resultId = suiteRunner.run();
-    gs.info('ATF: Suite execution started. Result ID: ' + resultId);
-  description: Run ATF test suite
+  table_name: sys_user_has_role
+  query: user.user_name=[mcp_user]^role.name=sn_cicd.sys_ci_automation^ORrole.name=admin
+  fields: role.name
 ```
 
-#### Step 7.2: Scheduled Execution
-
-Create a scheduled job to run tests regularly.
-
-**Using MCP:**
+3. ATF execution is enabled. `sn_atf.runner.enabled` is `false` by default on PDIs, and runs then fail with `ATF_RUNNER_DISABLED`:
 ```
-Tool: SN-Create-Record
+Tool: SN-Query-Table
 Parameters:
-  table_name: sysauto_script
-  data:
-    name: "Nightly ATF Regression Suite"
-    active: true
-    run_type: daily
-    time: "02:00:00"
-    script: |
-      // Run regression test suite nightly
-      var suiteRunner = new sn_atf.ATFTestSuiteRunner();
-      suiteRunner.setSuite('[regression_suite_sys_id]');
-
-      // Optional: Set parameters
-      suiteRunner.setParameter('environment', 'nightly');
-
-      var resultId = suiteRunner.run();
-
-      // Log result
-      gs.info('Nightly regression started. Result: ' + resultId);
-
-      // Optional: Send notification on completion
-      // (handled by ATF result business rules)
+  table_name: sys_properties
+  query: name=sn_atf.runner.enabled
+  fields: sys_id,name,value
 ```
+If it is `false`, setting it to `true` is a configuration change: get approval, record the original value, set it with `SN-Update-Record`, and restore the original value when testing ends. Do not enable it on production instances.
 
-#### Step 7.3: Run with Impersonation
+UI steps also need an open Client Test Runner or `run_in_cloud: true`.
 
-Test as different users to validate role-based access.
+#### Step 7.2: Run a Test or Suite
 
-**Using MCP:**
+**Run one test:**
 ```
-Tool: SN-Execute-Background-Script
+Tool: SN-Run-ATF-Test
 Parameters:
-  script: |
-    var runner = new sn_atf.ATFTestRunner();
-    runner.setTest('[test_sys_id]');
-    runner.setImpersonateUser('[user_sys_id]');  // Run as this user
-    var resultId = runner.run();
-    gs.info('ATF: Test running as impersonated user. Result: ' + resultId);
-  description: Run ATF test with user impersonation
+  test_sys_id: [test_sys_id]   # or test_name (must match exactly one test)
+  capture_node_logs: true      # required for SN-Get-ATF-Test-Logs later
+  wait: true                   # default; polls until finished or timeout_seconds
+  timeout_seconds: 45          # default 45, max 600
 ```
+
+**Run a suite:**
+```
+Tool: SN-Run-ATF-Suite
+Parameters:
+  test_suite_sys_id: [suite_sys_id]   # or test_suite_name
+  browser_name: chrome                # optional, for UI steps
+  wait: true
+  timeout_seconds: 120
+```
+
+`status` is `successful`, `failed`, `canceled`, `timeout`, `unknown`, or `started` (with `wait: false`). Suite results carry `counts` (passed, failed, errored, skipped) and `tests`, one row per test with `test_name`, `status`, `output`, and a `link` to its `sys_atf_test_result` record (capped at 200 rows; `tests_truncated` marks more).
+
+#### Step 7.3: Continue a Run That Timed Out
+
+`status: "timeout"` is not a failure: the run keeps going on the instance. Never start it again; continue with the returned `progress_id`:
+```
+Tool: SN-Get-CICD-Progress
+Parameters:
+  progress_id: [progress_id]
+  wait: true
+  timeout_seconds: 120
+```
+Repeat while `timed_out: true`. When `finished` is true, pass `results.id` to Step 7.4. Handle `status: "unknown"` (run started, progress unreadable) the same way.
+
+#### Step 7.4: Read Results
+
+```
+Tool: SN-Get-ATF-Results
+Parameters:
+  result_id: [results.id]
+  result_type: suite   # or test
+```
+For a suite, read each test's outcome from `tests`; the `sys_id` in a failing row's `link` is its test result, used for logs (Step 7.5) and step results (Step 8.2).
+
+#### Step 7.5: Read Test Logs
+
+Logs exist only when the run used `capture_node_logs: true` (an `SN-Run-ATF-Test` option); otherwise the tool returns `logs: []` with a note.
+```
+Tool: SN-Get-ATF-Test-Logs
+Parameters:
+  result_id: [test_result_sys_id]
+  pattern: error|fail   # optional regex, matched case-insensitively
+  limit: 100
+```
+
+#### Step 7.6: Run Errors
+
+| Error code | Cause | Fix |
+|------------|-------|-----|
+| `CICD_PLUGIN_INACTIVE` | `/api/sn_cicd` missing (HTTP 400/404 or a non-JSON page) | Activate "CI/CD REST API" (`com.glide.continuousdelivery`) under System Definition > Plugins, with approval |
+| `CICD_ROLE_MISSING` | HTTP 403 | Grant `sn_cicd.sys_ci_automation` (or `admin`) to the MCP user |
+| `ATF_RUNNER_DISABLED` | HTTP 400 "Start ATF test Failed with the given test ID" | Set `sn_atf.runner.enabled` to `true` (Step 7.1) and restore it afterwards; if already `true`, check that the test or suite id exists and is active |
+| `CICD_UNAUTHORIZED` | HTTP 401 | Fix the instance credentials the MCP server uses |
+
+#### Step 7.7: Scheduled and Role-Based Runs
+
+- **Recurring runs:** use ATF's built-in suite scheduling or a CI pipeline (Phase 9), not a scheduled script.
+- **Run as another user:** runs execute as the MCP user; add an Impersonate step inside the test (see Example 2).
 
 ### Phase 8: Test Results Analysis
 
 #### Step 8.1: Query Test Results
+
+For one run, use `SN-Get-ATF-Results` (Step 7.4). For history:
 
 **Get Latest Test Results:**
 ```
@@ -848,28 +893,22 @@ Parameters:
 
 #### Step 9.1: REST API for CI/CD
 
-ServiceNow provides REST APIs for ATF integration.
+The ATF tools wrap these CI/CD REST API endpoints, which pipelines can call directly. Run parameters go in the query string.
 
-**Start Test Suite via REST:**
+| Endpoint | Returns |
+|----------|---------|
+| `POST /api/sn_cicd/testsuite/run?test_suite_sys_id=[suite_sys_id]` (or `test_suite_name`) | `result.links.progress.id` |
+| `POST /api/sn_cicd/tests/run_test?test_sys_id=[test_sys_id]` | `result.links.progress.id` |
+| `GET /api/sn_cicd/progress/[progress_id]` | `result.status` (`0` pending, `1` running, `2` successful, `3` failed, `4` canceled) and `result.links.results.id` |
+| `GET /api/sn_cicd/testsuite/results/[result_id]` | `test_suite_status`, `rolledup_test_success_count`, `rolledup_test_failure_count`, `rolledup_test_error_count`, `rolledup_test_skip_count` |
+| `GET /api/sn_cicd/tests/test/results/[result_id]` | `test_status`, `output` |
+| `GET /api/sn_cicd/tests/test/results/[result_id]/logs?sysparm_regex=error` | Logs captured by a run with `capture_node_logs` |
+
+**Using now-sdk:** `now-sdk cicd` wraps the same API:
 ```bash
-POST /api/sn_cicd/testsuite/run
-Content-Type: application/json
-
-{
-  "test_suite_sys_id": "[suite_sys_id]",
-  "browser_name": "Chrome",
-  "browser_version": "latest"
-}
-```
-
-**Check Test Progress:**
-```bash
-GET /api/sn_cicd/progress/[result_id]
-```
-
-**Get Test Results:**
-```bash
-GET /api/sn_cicd/testsuite/results/[result_id]
+now-sdk cicd testsuite run --test-suite-name "My Test Suite"
+now-sdk cicd test run --test-name "My Test"
+now-sdk cicd test logs --result-id <result_id> --pattern 'error|fail'
 ```
 
 #### Step 9.2: Integration with Jenkins
@@ -890,20 +929,13 @@ pipeline {
         script {
           // Start test suite
           def response = httpRequest(
-            url: "${SN_INSTANCE}/api/sn_cicd/testsuite/run",
+            url: "${SN_INSTANCE}/api/sn_cicd/testsuite/run?test_suite_sys_id=${params.TEST_SUITE_ID}",
             httpMode: 'POST',
-            authentication: 'servicenow-api',
-            contentType: 'APPLICATION_JSON',
-            requestBody: """
-              {
-                "test_suite_sys_id": "${params.TEST_SUITE_ID}",
-                "browser_name": "Chrome"
-              }
-            """
+            authentication: 'servicenow-api'
           )
 
-          def result = readJSON text: response.content
-          env.RESULT_ID = result.result.sys_id
+          def run = readJSON text: response.content
+          env.PROGRESS_ID = run.result.links.progress.id
         }
       }
     }
@@ -911,16 +943,20 @@ pipeline {
     stage('Wait for Results') {
       steps {
         script {
-          def status = 'running'
-          while (status == 'running') {
-            sleep 30
-            def response = httpRequest(
-              url: "${SN_INSTANCE}/api/sn_cicd/progress/${env.RESULT_ID}",
-              authentication: 'servicenow-api'
-            )
-            def progress = readJSON text: response.content
-            status = progress.result.status
+          def progress
+          timeout(time: 30, unit: 'MINUTES') {
+            while (true) {
+              sleep 30
+              def response = httpRequest(
+                url: "${SN_INSTANCE}/api/sn_cicd/progress/${env.PROGRESS_ID}",
+                authentication: 'servicenow-api'
+              )
+              progress = readJSON(text: response.content).result
+              if (!(progress.status.toString() in ['0', '1'])) break  // 0 pending, 1 running
+            }
           }
+          env.PROGRESS_STATUS = progress.status.toString()
+          env.RESULT_ID = progress.links?.results?.id ?: ''
         }
       }
     }
@@ -928,14 +964,17 @@ pipeline {
     stage('Evaluate Results') {
       steps {
         script {
+          if (!env.RESULT_ID) {
+            error "ATF run ended without results (progress status ${env.PROGRESS_STATUS})"
+          }
           def response = httpRequest(
             url: "${SN_INSTANCE}/api/sn_cicd/testsuite/results/${env.RESULT_ID}",
             authentication: 'servicenow-api'
           )
-          def results = readJSON text: response.content
+          def results = readJSON(text: response.content).result
 
-          if (results.result.status != 'success') {
-            error "ATF tests failed: ${results.result.fail_count} failures"
+          if (env.PROGRESS_STATUS != '2' || results.test_suite_status != 'success') {
+            error "ATF tests failed: ${results.rolledup_test_failure_count} failed, ${results.rolledup_test_error_count} errored"
           }
         }
       }
@@ -966,38 +1005,41 @@ jobs:
         run: |
           RESPONSE=$(curl -s -X POST \
             -u "${{ secrets.SN_USERNAME }}:${{ secrets.SN_PASSWORD }}" \
-            -H "Content-Type: application/json" \
-            -d '{"test_suite_sys_id":"${{ vars.ATF_SUITE_ID }}"}' \
-            "${{ vars.SN_INSTANCE }}/api/sn_cicd/testsuite/run")
+            "${{ vars.SN_INSTANCE }}/api/sn_cicd/testsuite/run?test_suite_sys_id=${{ vars.ATF_SUITE_ID }}")
 
-          RESULT_ID=$(echo $RESPONSE | jq -r '.result.sys_id')
-          echo "result_id=$RESULT_ID" >> $GITHUB_OUTPUT
+          PROGRESS_ID=$(echo "$RESPONSE" | jq -r '.result.links.progress.id')
+          echo "progress_id=$PROGRESS_ID" >> $GITHUB_OUTPUT
 
       - name: Wait for Completion
+        id: wait
+        timeout-minutes: 30
         run: |
-          STATUS="running"
-          while [ "$STATUS" = "running" ]; do
+          STATUS=0
+          while [ "$STATUS" = "0" ] || [ "$STATUS" = "1" ]; do  # 0 pending, 1 running
             sleep 30
             RESPONSE=$(curl -s \
               -u "${{ secrets.SN_USERNAME }}:${{ secrets.SN_PASSWORD }}" \
-              "${{ vars.SN_INSTANCE }}/api/sn_cicd/progress/${{ steps.run-tests.outputs.result_id }}")
-            STATUS=$(echo $RESPONSE | jq -r '.result.status')
-            echo "Test status: $STATUS"
+              "${{ vars.SN_INSTANCE }}/api/sn_cicd/progress/${{ steps.run-tests.outputs.progress_id }}")
+            STATUS=$(echo "$RESPONSE" | jq -r '.result.status')
+            echo "Progress: $(echo "$RESPONSE" | jq -r '.result.status_label')"
           done
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "result_id=$(echo "$RESPONSE" | jq -r '.result.links.results.id // empty')" >> $GITHUB_OUTPUT
 
       - name: Get Results
         run: |
           RESPONSE=$(curl -s \
             -u "${{ secrets.SN_USERNAME }}:${{ secrets.SN_PASSWORD }}" \
-            "${{ vars.SN_INSTANCE }}/api/sn_cicd/testsuite/results/${{ steps.run-tests.outputs.result_id }}")
+            "${{ vars.SN_INSTANCE }}/api/sn_cicd/testsuite/results/${{ steps.wait.outputs.result_id }}")
 
-          STATUS=$(echo $RESPONSE | jq -r '.result.status')
-          PASS=$(echo $RESPONSE | jq -r '.result.pass_count')
-          FAIL=$(echo $RESPONSE | jq -r '.result.fail_count')
+          SUITE_STATUS=$(echo "$RESPONSE" | jq -r '.result.test_suite_status')
+          PASS=$(echo "$RESPONSE" | jq -r '.result.rolledup_test_success_count')
+          FAIL=$(echo "$RESPONSE" | jq -r '.result.rolledup_test_failure_count')
+          ERRORED=$(echo "$RESPONSE" | jq -r '.result.rolledup_test_error_count')
 
-          echo "Results: $PASS passed, $FAIL failed"
+          echo "Results: $PASS passed, $FAIL failed, $ERRORED errored"
 
-          if [ "$STATUS" != "success" ]; then
+          if [ "${{ steps.wait.outputs.status }}" != "2" ] || [ "$SUITE_STATUS" != "success" ]; then
             echo "::error::ATF tests failed"
             exit 1
           fi
@@ -1221,8 +1263,12 @@ Parameters:
 | Create Test | SN-Create-Record | Create sys_atf_test |
 | Create Step | SN-Create-Record | Create sys_atf_step |
 | Add Parameters | SN-Create-Record | Create sys_atf_parameter |
-| Query Results | SN-Query-Table | Read sys_atf_test_result |
-| Run Test | SN-Execute-Background-Script | Trigger test execution |
+| Query Results | SN-Query-Table | Read sys_atf_test_result history |
+| Run Test | SN-Run-ATF-Test | Execute one test via sn_cicd |
+| Run Suite | SN-Run-ATF-Suite | Execute a suite via sn_cicd |
+| Continue Run | SN-Get-CICD-Progress | Wait on a run that timed out |
+| Read Result | SN-Get-ATF-Results | Test or suite outcome, per-test rows |
+| Read Logs | SN-Get-ATF-Test-Logs | Logs of a run with capture_node_logs |
 | Get Step Configs | SN-Query-Table | List sys_atf_step_config |
 | Update Test | SN-Update-Record | Modify test properties |
 
@@ -1263,19 +1309,11 @@ Parameters:
 
 ### Test Fails to Start
 
-**Symptom:** Test shows "Pending" status indefinitely
+**Symptom:** A run tool returns `ATF_RUNNER_DISABLED`, or the run stays `pending` until `timeout`
 **Causes:**
-- ATF Runner not configured
-- Missing test client for UI tests
-- Test scheduler disabled
-**Solution:**
-```
-Tool: SN-Query-Table
-Parameters:
-  table_name: sys_atf_schedule
-  query: active=true
-  fields: sys_id,name,state,last_run
-```
+- `sn_atf.runner.enabled` is `false` (the PDI default)
+- UI steps with no open Client Test Runner and no `run_in_cloud: true`
+**Solution:** Run the Step 7.1 preflight. For UI steps, open a Client Test Runner or set `run_in_cloud: true`. Continue a pending run with `SN-Get-CICD-Progress`; do not start it again.
 
 ### UI Tests Fail Randomly
 
@@ -1351,7 +1389,7 @@ Parameters:
 - ServiceNow instance performance issues
 - Network connectivity problems
 **Solution:**
-- Set appropriate timeout in pipeline
+- Bound the wait (Jenkins `timeout`, Actions `timeout-minutes`); a timed-out wait does not stop the run, so check its progress before starting another
 - Split large suites into smaller ones
 - Use parallel test execution
 
@@ -1556,6 +1594,7 @@ Parameters:
 - `admin/update-set-management` - Version control for tests
 - `admin/deployment-workflow` - Deploy tests between instances
 - `security/acl-management` - Test ACL configurations
+- `development/fluent-sdk` - Define ATF tests in code; now-sdk 4.14 Fluent adds reusable tests (`isReusable`, `atf.executeTest`)
 
 ## References
 
