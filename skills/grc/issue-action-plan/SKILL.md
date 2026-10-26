@@ -1,6 +1,6 @@
 ---
 name: issue-action-plan
-version: 1.0.2
+version: 1.0.3
 description: Generate comprehensive action plans for GRC issues including remediation steps, responsible parties, timelines, and success criteria prioritized by risk rating and compliance impact
 author: Happy Technologies LLC
 tags: [grc, issue, action-plan, remediation, compliance, risk, governance]
@@ -329,7 +329,7 @@ Content-Type: application/json
 | Analyze Risks | SN-Query-Table | GET /api/now/table/sn_grc_risk |
 | Create Tasks | SN-Create-Record | POST /api/now/table/sn_compliance_task |
 | Update Issue | SN-Update-Record | PATCH /api/now/table/sn_grc_issue |
-| Complex Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Complex Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

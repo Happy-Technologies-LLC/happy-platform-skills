@@ -14,7 +14,7 @@ function option(name, fallback) {
 const sourceRoot = resolve(option('--source', join(repositoryRoot, '..', 'happy-platform-mcp')));
 const fixturePath = resolve(option(
   '--fixture',
-  join(repositoryRoot, 'contracts', 'happy-platform-mcp-5.1.0-natural-language.json')
+  join(repositoryRoot, 'contracts', 'happy-platform-mcp-6.1.0-natural-language.json')
 ));
 const fixture = JSON.parse(await readFile(fixturePath, 'utf8'));
 const sourcePackage = JSON.parse(await readFile(join(sourceRoot, 'package.json'), 'utf8'));

@@ -1,6 +1,6 @@
 ---
 name: fluent-sdk
-version: 1.0.1
+version: 1.1.0
 description: Hybrid ServiceNow development using the three-tier approach - NowSDK Fluent for metadata-as-code, MCP REST for runtime operations, and fix scripts as manual fallback
 author: Happy Technologies LLC
 tags: [development, nowsdk, fluent, flows, scoped-apps, metadata-as-code, deployment, catalog, tables, business-rules]
@@ -17,11 +17,17 @@ tools:
     - SN-Set-Update-Set
     - SN-Get-Current-Update-Set
     - SN-Inspect-Update-Set
+    - SN-Run-ATF-Test
+    - SN-Run-ATF-Suite
+    - SN-Get-CICD-Progress
   cli:
-    - now-sdk build
-    - now-sdk deploy
     - now-sdk auth
+    - now-sdk build
+    - now-sdk install
     - now-sdk explain
+    - now-sdk query
+    - now-sdk exec
+    - now-sdk cicd
   native:
     - Bash
     - Read
@@ -39,7 +45,7 @@ This skill implements a **three-tier development strategy** for ServiceNow, rout
 ```
 TIER 1: NowSDK Fluent (metadata-as-code)
   Flows, tables, business rules, catalog items, ACLs, scoped apps
-  TypeScript → build → deploy as scoped application
+  TypeScript → build → install as scoped application
   ↓ falls through when...
   - Runtime data operations needed
   - Live instance queries required
@@ -66,28 +72,27 @@ TIER 3: Fix Scripts (manual fallback)
 - "Deploy metadata changes with version control"
 - "I need a flow but REST can't create flows"
 
-## Foundation: ServiceNow Official Fluent Skills
+## Foundation: ServiceNow's now-sdk Agent Skill
 
-This skill builds on ServiceNow's official AI skills from [github.com/ServiceNow/sdk](https://github.com/ServiceNow/sdk):
+ServiceNow publishes its own agent skill for Fluent work: [`now-sdk`](https://github.com/ServiceNow/sdk/blob/v4.14.0/skills/now-sdk/SKILL.md) in the ServiceNow/sdk repository. This skill does not bundle it. Install it next to this one so the agent picks it up in any folder that has a `now.config.json`. The repository README lists the install command for each agent (Claude Code plugin, Codex, Cursor, GitHub Copilot via `gh skill install`). This skill decides which tier handles an operation; the upstream skill covers project orientation and documentation lookup.
 
-- **`vendor/now-sdk-setup.md`** — Environment setup (Node 20+, SDK install, auth). Run this first if `now-sdk` commands fail.
-- **`vendor/now-sdk-explain.md`** — Self-documenting SDK reference via `npx @servicenow/sdk explain`. Always consult this before writing Fluent code — it covers every metadata type, convention, and project structure detail.
-
-**Before writing any Fluent code**, follow the explain skill's protocol:
+Either way, the installed SDK is the source of truth for Fluent APIs. `now-sdk explain` reads docs that ship with the exact SDK version in the project:
 1. `npx @servicenow/sdk explain <search-term> --list --format=raw` — find relevant topics
-2. `npx @servicenow/sdk explain <topic> --peek --format=raw` — preview before committing
+2. `npx @servicenow/sdk explain <topic> --peek --format=raw` — check the summary before reading
 3. `npx @servicenow/sdk explain <topic> --format=raw` — read the full topic
+4. `npx @servicenow/sdk <subcommand> --help` before first use of any subcommand — do not guess flags
 
-This ensures you're using the latest API signatures and conventions, not stale examples.
+Do this before writing any Fluent code; code examples in this skill can lag behind SDK releases.
 
 ## Prerequisites
 
-- **Node.js:** v20+ (`node --version`)
-- **NowSDK:** v4.6.0+ (`npm install -g @servicenow/sdk@latest`)
+- **Node.js:** v20.18+ (`node --version`; the `engines` minimum of `@servicenow/sdk` 4.14.0)
+- **NowSDK:** v4.14.0+ (`npm install -g @servicenow/sdk@latest`)
 - **Instance:** ServiceNow SDK plugin enabled, user has `admin` or `sn_sdk.user` role
-- **MCP Server:** happy-platform-mcp configured and connected
+- **MCP Server:** happy-platform-mcp 6.1.0+ configured and connected
 - **Auth:** `now-sdk auth` completed for target instance
-- **Related Skills:** `development/mcp-server` for MCP tool reference, `vendor/now-sdk-explain.md` for Fluent API docs
+- **ATF (optional):** CI/CD REST API plugin (`com.glide.continuousdelivery`), role `sn_cicd.sys_ci_automation` or `admin`, and `sn_atf.runner.enabled=true` (false by default on PDIs)
+- **Related Skills:** `development/mcp-server` for MCP tool reference; ServiceNow's upstream `now-sdk` skill (see Foundation) for Fluent orientation
 
 ## Tier Decision Matrix
 
@@ -96,41 +101,55 @@ Use this matrix to determine which tier handles each operation:
 | Operation | Tier 1 (Fluent) | Tier 2 (MCP REST) | Tier 3 (Fix Script) |
 |-----------|-----------------|--------------------|--------------------|
 | **Create flow with logic** | YES - full Flow DSL | No - cannot create flows | No |
-| **Compile/publish flow** | Automatic on deploy | No | YES - manual in UI |
+| **Compile/publish flow** | Automatic on install (unless `--skip-flow-activation`) | No | Only if activation was skipped or failed - manual in UI |
 | **Create table + schema** | YES - `Table()` with typed columns | Yes - but no version control | No |
 | **Business rules** | YES - `BusinessRule()` with scripts | Yes - `SN-Create-Record` on sys_script | No |
 | **Catalog items** | YES - `CatalogItem()` with variables | Yes - but UI policies limited | Partial |
 | **UI Policy actions** | YES - deployed with app | No - REST can't link actions | YES - `setValue()` script |
 | **ACLs** | YES - `Acl()` definition | Yes - `SN-Create-Record` on sys_security_acl | No |
 | **Script includes** | YES - with server modules | Yes - `SN-Create-Record` on sys_script_include | No |
-| **Query live data** | No - not for runtime | YES - `SN-Query-Table` | No |
+| **Query live data** | No - not for runtime | YES - `SN-Query-Table` (or `now-sdk query`) | No |
 | **Update existing records** | No - creates new metadata | YES - `SN-Update-Record` | No |
-| **Update set management** | Automatic on deploy | YES - `SN-Set-Update-Set`, inspect, move | No |
-| **Background script execution** | No | YES - `SN-Execute-Background-Script` | No |
+| **Update set management** | Automatic on install | YES - `SN-Set-Update-Set`, inspect, move | No |
+| **Background script execution** | No | YES - `SN-Execute-Background-Script` (or `now-sdk exec`) | No |
 | **Scoped app creation** | YES - `now.config.json` defines scope | Yes - `SN-Create-Record` on sys_app | No |
-| **Deploy to instance** | YES - `now-sdk deploy` | No - records created individually | No |
+| **Deploy to instance** | YES - `now-sdk install` | No - records created individually | No |
+| **ATF tests** | YES - `Test()`, `TestSuite()`; run in CI with `now-sdk cicd` | YES - `SN-Run-ATF-Test`, `SN-Run-ATF-Suite` | No |
 | **Complex GlideRecord ops** | No | Partial | YES - full server-side API |
+
+### NowSDK CLI or MCP Tool
+
+Several runtime operations exist both as `now-sdk` subcommands and as MCP tools. Pick by where you are working, not by capability:
+
+| Need | NowSDK CLI | MCP tool | Use |
+|------|------------|----------|-----|
+| Run a server script | `now-sdk exec` (`--reason`, `--scope`, `--file`) | `SN-Execute-Background-Script` (`description`, `scope`) | Same `/sys.scripts.do` processor as the authenticated user; both record a rollback context by default (only when records change). `exec` defaults to the project's scope; use it from a terminal or project. Use the MCP tool from an agent session. Get the user's approval for every run of either. |
+| Read records | `now-sdk query <table> -q '<encoded query>' -o json` | `SN-Query-Table` | Both read-only Table API. Prefer either over a script. |
+| Run ATF | `now-sdk cicd test run`, `cicd testsuite run`, `cicd test logs` | `SN-Run-ATF-Test`, `SN-Run-ATF-Suite`, then `SN-Get-CICD-Progress` | CLI in CI pipelines (non-zero exit gates the build). MCP tools for interactive runs; on `status: "timeout"` continue with `SN-Get-CICD-Progress`, never re-run. |
+| Promote an app | `now-sdk cicd publish`, `cicd install`, `cicd rollback` (Application Repository) | None | Promote a published version across instances instead of `now-sdk install` to production. |
 
 ## Procedure
 
 ### Step 1: Environment Setup
 
-Follow `vendor/now-sdk-setup.md` to verify NowSDK is installed and working:
+Verify NowSDK is installed and working:
 
 ```bash
-# Check Node version (must be 20+)
+# Check Node version (must be 20.18+)
 node --version
 
-# Check SDK version (must be 4.6.0+)
+# Check SDK version (must be 4.14.0+)
 npx @servicenow/sdk --version
 
 # If not installed or outdated:
 npm install -g @servicenow/sdk@latest
 
 # Authenticate to your instance
-now-sdk auth
-# Follow prompts: instance URL, credentials
+now-sdk auth --add <instance-url> --type basic
+# Follow prompts: alias, credentials
 ```
+
+**Credential storage (4.14.0+):** profiles live in an AES-256-GCM `~/.now-sdk/credentials.enc` (override the directory with `SN_SDK_CREDENTIALS_DIR`); only the encryption key is in the OS keychain. Existing keychain profiles migrate automatically on first use. The file is not portable between machines, so never copy it into CI; pipelines authenticate with environment credentials (`SN_SDK_NODE_ENV=SN_SDK_CI_INSTALL` plus `SN_SDK_INSTANCE_URL` and OAuth client or user credentials — see `npx @servicenow/sdk explain ci-integration --format=raw`).
 
 **Verify with explain command:**
 ```bash
@@ -163,7 +182,7 @@ Before writing any code, classify the request:
 - Verifying Tier 1 deployments
 
 **Route to Tier 3 (Fix Script) when:**
-- Flow compilation (must happen in UI after deploy)
+- Flow activation that `now-sdk install` skipped or failed (manual in UI)
 - UI Policy action linking via `setValue()`
 - Complex GlideRecord operations not exposed via REST
 - Bulk data operations requiring server-side performance
@@ -196,7 +215,7 @@ my-sn-app/
 ```json
 {
   "scope": "x_myapp",
-  "scopeId": "<sys_id from instance or generated on first deploy>"
+  "scopeId": "<sys_id from instance or generated on first install>"
 }
 ```
 
@@ -207,7 +226,7 @@ my-sn-app/
   "version": "1.0.0",
   "scripts": {
     "build": "now-sdk build",
-    "deploy": "now-sdk deploy",
+    "deploy": "now-sdk install",
     "explain": "now-sdk explain"
   },
   "devDependencies": {
@@ -422,14 +441,15 @@ export const newRequestCatalogItem = CatalogItem({
 })
 ```
 
-### Step 5: Build and Deploy (Tier 1)
+### Step 5: Build and Install (Tier 1)
 
 ```bash
 # Build the project (validates TypeScript, generates metadata)
 now-sdk build
 
-# Deploy to instance (creates/updates scoped app and all metadata)
-now-sdk deploy
+# Install to instance (creates/updates scoped app and all metadata; async by default)
+# `now-sdk deploy` is a hidden alias of `install`
+now-sdk install
 ```
 
 ### Step 6: Verify with MCP Tools (Tier 2)
@@ -463,21 +483,21 @@ Parameters:
 
 For operations that neither Fluent nor REST can handle, generate fix scripts.
 
-**Flow Compilation (post-deploy):**
+**Flow Activation (only if `now-sdk install --skip-flow-activation` was used or activation failed):**
 ```
 Tool: SN-Create-Fix-Script
 Parameters:
-  name: "Compile Escalation Flow"
-  description: "Compile the request escalation flow after Fluent deployment"
-  script: |
-    // Navigate to Flow Designer and compile:
+  script_name: activate_escalation_flow
+  description: "Activate the request escalation flow after Fluent install"
+  script_content: |
+    // Activate the flow in Flow Designer:
     // 1. Open Flow Designer
     // 2. Find "Request Escalation Flow"
     // 3. Click "Activate" to compile and enable
     //
-    // This step cannot be automated - Flow Designer compilation
-    // requires the UI runtime environment.
-    gs.info('Manual step: Compile flow in Flow Designer UI');
+    // Needed only when now-sdk install skipped (--skip-flow-activation)
+    // or failed flow activation.
+    gs.info('Manual step: Activate flow in Flow Designer UI');
 ```
 
 **UI Policy Action Linking (if needed):**
@@ -494,16 +514,16 @@ Parameters:
       gr.update();
     }
   description: "Link UI Policy actions to catalog variables"
-  execution_method: trigger
+  record_for_rollback: true
 ```
 
 **Bulk Data Operations:**
 ```
 Tool: SN-Create-Fix-Script
 Parameters:
-  name: "Seed Sample Data"
+  script_name: seed_sample_data
   description: "Create initial sample records for testing"
-  script: |
+  script_content: |
     var records = [
       { title: 'Test Request 1', priority: 1 },
       { title: 'Test Request 2', priority: 3 },
@@ -533,7 +553,7 @@ TIER 1 (Fluent):
   3. Define business rules in rules.now.ts
   4. Define escalation flow in flows.now.ts
   5. Define catalog item in catalog.now.ts
-  6. now-sdk build && now-sdk deploy
+  6. now-sdk build && now-sdk install
 
 TIER 2 (MCP REST):
   7. SN-Query-Table → verify all records in update set
@@ -542,9 +562,9 @@ TIER 2 (MCP REST):
   10. SN-Execute-Background-Script → seed sample data
 
 TIER 3 (Fix Script):
-  11. SN-Create-Fix-Script → flow compilation instructions
+  11. SN-Create-Fix-Script → flow activation instructions (only if install did not activate it)
   12. SN-Create-Fix-Script → any UI Policy action linking
-  13. Manual: compile flow in Flow Designer UI
+  13. Manual (if needed): activate flow in Flow Designer UI
 ```
 
 ## NowSDK Explain Reference
@@ -561,19 +581,33 @@ npx @servicenow/sdk explain flow --list --peek --format=raw
 # Read full topic (only after previewing)
 npx @servicenow/sdk explain flow --format=raw
 
-# Key topics:
-#   quickstart  - Getting started
-#   Table       - Table definitions
-#   Flow        - Flow automation
-#   BusinessRule - Business rule definitions
-#   CatalogItem - Service catalog items
-#   Acl         - Access control lists
-#   ScriptInclude - Script includes
-#   naming      - Naming conventions
-#   structure   - Project structure
+# Key topics (and tags for --list):
+#   quickstart      - Getting-started tag (use with --list)
+#   fluent-language-overview - Fluent language conventions
+#   keys-file       - keys.ts and record identity
+#   Table           - Table definitions
+#   Flow            - Flow automation
+#   BusinessRule    - Business rule definitions
+#   CatalogItem     - Service catalog items
+#   Acl             - Access control lists
+#   ScriptInclude   - Script includes
+#   exec-guide      - Running scripts with now-sdk exec
+#   query-guide     - Live instance queries with now-sdk query
+#   ci-integration  - CI auth, now-sdk cicd promotion and ATF gates
 ```
 
-**Important:** Always use `--peek` first before reading a full topic to avoid wasting context on irrelevant content.
+**Important:** Use `--peek` first before reading a full topic to avoid wasting context on irrelevant content (quickstart topics can be read directly).
+
+### Fluent APIs Added in SDK 4.10–4.14
+
+Look each up with `explain` before use:
+
+- `StateModel` — table states, transitions, and gating conditions (4.10)
+- `TestSuite`, `GraphQLApi` — ATF suites; scripted GraphQL APIs (4.11)
+- `Assessment`, `RiskAssessment` — assessment definitions (4.12)
+- `DatabaseView` — `sys_db_view` records (4.13)
+- `UiMacro` — `sys_ui_macro` with Jelly via `Now.include()` (4.14)
+- Reusable ATF tests — `Test({ isReusable: true, inputs, outputs })`, called with `atf.executeTest`, outputs set with `atf.setReusableTestOutputs` (4.14)
 
 ## Fluent API Quick Reference
 
@@ -650,7 +684,7 @@ wfa.flowLogic.assignSubflowOutputs({ $id }, params.outputs, { ... })
 
 ## Best Practices
 
-- Consult `vendor/now-sdk-explain.md` before writing Fluent metadata.
+- Read the relevant `now-sdk explain` topics before writing Fluent metadata.
 - Keep generated metadata in source control and review the resulting platform changes.
 - Use the tier decision matrix to avoid mixing deployment models without a clear need.
 
@@ -659,15 +693,17 @@ wfa.flowLogic.assignSubflowOutputs({ $id }, params.outputs, { ... })
 ### NowSDK Not Found
 ```bash
 npm install -g @servicenow/sdk@latest
-# Verify: npx @servicenow/sdk --version (must be 4.6.0+)
+# Verify: npx @servicenow/sdk --version (must be 4.14.0+)
 ```
 
 ### Auth Failures
 ```bash
 # Re-authenticate
-now-sdk auth
+now-sdk auth --add <instance-url> --type basic
 # Ensure instance has SDK plugin enabled
 # Ensure user has admin or sn_sdk.user role
+# "Stored credentials can't be read": keychain locked/cleared, or credentials.enc
+# was copied from another machine — re-run now-sdk auth --add on this machine
 ```
 
 ### Build Errors
@@ -681,11 +717,11 @@ npx @servicenow/sdk explain <TypeName> --format=raw
 # - Script file not found → verify Now.include() path is relative to .now.ts file
 ```
 
-### Deploy Creates Wrong Scope
+### Install Creates Wrong Scope
 Verify `now.config.json` has the correct `scope` and `scopeId`. The `scopeId` should match the `sys_id` of the `sys_app` record on your instance.
 
 ### Fallthrough: When Fluent Fails
-If `now-sdk deploy` fails for specific record types, fall through:
+If `now-sdk install` fails for specific record types, fall through:
 1. Check if MCP REST can create the record directly (`SN-Create-Record`)
 2. If REST also fails, generate a fix script (`SN-Create-Fix-Script`)
 3. Document the limitation for future reference

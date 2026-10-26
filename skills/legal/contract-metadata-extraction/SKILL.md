@@ -1,6 +1,6 @@
 ---
 name: contract-metadata-extraction
-version: 1.0.1
+version: 1.0.2
 description: Extract metadata from contracts including parties, effective dates, value, auto-renewal terms, governing law, key contacts, and obligation summaries for portfolio management
 author: Happy Technologies LLC
 tags: [legal, contract, metadata, extraction, clm, renewal, parties, obligations, governing-law]
@@ -305,7 +305,7 @@ Parameters:
 | Query Attachments | SN-Query-Table | GET /api/now/table/sys_attachment |
 | Create Obligation | SN-Create-Record | POST /api/now/table/clm_obligation |
 | Update Contract | SN-Update-Record | PATCH /api/now/table/ast_contract/{sys_id} |
-| Batch Extraction | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Batch Extraction | SN-Execute-Background-Script | POST /sys.scripts.do |
 
 ## Best Practices
 

@@ -1,6 +1,6 @@
 ---
 name: issue-summarization
-version: 1.0.2
+version: 1.0.3
 description: Summarize GRC issues with context including related risks, controls, compliance gaps, and business impact to generate executive-ready summaries for audit committees
 author: Happy Technologies LLC
 tags: [grc, issue, summarization, compliance, risk, audit, executive-reporting]
@@ -391,7 +391,7 @@ Parameters:
 | Search Issues | SN-Natural-Language-Search | N/A |
 | Query Risks | SN-Query-Table | GET /api/now/table/sn_grc_risk |
 | Query Controls | SN-Query-Table | GET /api/now/table/sn_compliance_control |
-| Aggregate Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Aggregate Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

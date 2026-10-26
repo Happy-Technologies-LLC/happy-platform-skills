@@ -1,6 +1,6 @@
 ---
 name: contracts-query-enhancer
-version: 1.0.2
+version: 1.0.3
 description: Enhance contract search queries with contextual understanding, mapping natural language to contract fields, obligation types, clause categories, and CLM-specific terminology
 author: Happy Technologies LLC
 tags: [legal, contract, search, query, nlp, clm, natural-language, filtering, discovery]
@@ -240,7 +240,7 @@ Parameters:
 | Resolve Choice Values | SN-Query-Table | GET /api/now/table/sys_choice |
 | Resolve Vendors | SN-Query-Table | GET /api/now/table/core_company |
 | Query Obligations | SN-Query-Table | GET /api/now/table/clm_obligation |
-| Aggregate Counts | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Aggregate Counts | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Discover Fields | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

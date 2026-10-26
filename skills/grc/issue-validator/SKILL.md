@@ -1,6 +1,6 @@
 ---
 name: issue-validator
-version: 1.0.1
+version: 1.0.2
 description: Validate GRC issues for completeness, accuracy, and compliance. Check required fields, risk ratings, control mappings, and remediation plan adequacy
 author: Happy Technologies LLC
 tags: [grc, issue, validation, compliance, data-quality, audit-readiness, controls]
@@ -391,7 +391,7 @@ Parameters:
 |-----------|----------|---------------|
 | Query Issues | SN-Query-Table | GET /api/now/table/sn_grc_issue |
 | Read Single Issue | SN-Get-Record | GET /api/now/table/sn_grc_issue/{sys_id} |
-| Run Validation Scripts | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Run Validation Scripts | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Discover Schema | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 | Query Controls | SN-Query-Table | GET /api/now/table/sn_compliance_control |
 

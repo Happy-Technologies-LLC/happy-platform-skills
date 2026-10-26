@@ -40,4 +40,15 @@ describe('package skill path verification', () => {
       'happy-servicenow-skills'
     )).toBe('1.2.1');
   });
+
+  test('normalizes npm 11 array and npm 12 keyed pack JSON shapes', async () => {
+    const { parseNpmPackResult } = await import('../scripts/package-verification-lib.mjs');
+    const result = { name: 'happy-servicenow-skills', filename: 'happy-servicenow-skills-1.2.1.tgz', files: [] };
+
+    expect(parseNpmPackResult(JSON.stringify([result]), 'happy-servicenow-skills')).toEqual(result);
+    expect(parseNpmPackResult(JSON.stringify({ 'happy-servicenow-skills': result }), 'happy-servicenow-skills'))
+      .toEqual(result);
+    expect(() => parseNpmPackResult(JSON.stringify([result]), 'happy-platform-skills'))
+      .toThrow(/happy-platform-skills/);
+  });
 });

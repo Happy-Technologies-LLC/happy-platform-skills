@@ -1,7 +1,7 @@
 ---
 name: script-sync
-version: 1.1.0
-description: Explicit pull, local edit, freshness check, and push workflow for ServiceNow scripts with Happy Platform MCP 5.1
+version: 1.1.1
+description: Explicit pull, local edit, freshness check, and push workflow for ServiceNow scripts with Happy Platform MCP 6.1
 author: Happy Technologies LLC
 tags: [admin, development, git, local-development, scripts, version-control]
 platforms: [claude-code, claude-desktop, chatgpt, cursor, any]
@@ -24,7 +24,7 @@ estimated_time: 15-30 minutes
 
 ## Overview
 
-Happy Platform MCP 5.1 has no automatic script synchronization or watch tool.
+Happy Platform MCP 6.1 has no automatic script synchronization or watch tool.
 Use this explicit workflow to pull the current record, edit a local copy, check
 that the remote record has not changed, and push the intended script field with
 `SN-Update-Record`.
@@ -136,7 +136,7 @@ current update set with a bounded `SN-Query-Table` query.
 
 ### 7. Repeat explicitly for later edits
 
-There is no watch mode in Happy Platform MCP 5.1. For each change, repeat the
+There is no watch mode in Happy Platform MCP 6.1. For each change, repeat the
 freshness check, update, and verification. A local file watcher may run linting
 or tests, but it must not push ServiceNow changes without the explicit conflict
 check and update sequence above.
@@ -189,7 +189,7 @@ record as authoritative until the discrepancy is understood.
 
 ### Continuous synchronization is required
 
-Happy Platform MCP 5.1 does not provide automatic pull, push, or watch tools.
+Happy Platform MCP 6.1 does not provide automatic pull, push, or watch tools.
 Keep the explicit workflow, or build a separately reviewed deployment pipeline
 with equivalent freshness and verification gates.
 

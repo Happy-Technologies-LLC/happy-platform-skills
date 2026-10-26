@@ -1,6 +1,6 @@
 ---
 name: suggest-remediation-tasks
-version: 1.0.1
+version: 1.0.2
 description: Suggest remediation tasks for GRC issues based on control gaps, risk type, and regulatory framework. Generate task lists with owners and deadlines
 author: Happy Technologies LLC
 tags: [grc, remediation, tasks, compliance, risk-mitigation, control-gaps, regulatory]
@@ -299,7 +299,7 @@ Content-Type: application/json
 | Read Issue | SN-Get-Record | GET /api/now/table/sn_grc_issue/{sys_id} |
 | Query Controls | SN-Query-Table | GET /api/now/table/sn_compliance_control |
 | Query Risks | SN-Query-Table | GET /api/now/table/sn_grc_risk |
-| Generate Suggestions | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Generate Suggestions | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Create Tasks | SN-Create-Record | POST /api/now/table/sn_grc_remediation_task |
 | Discover Schema | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 

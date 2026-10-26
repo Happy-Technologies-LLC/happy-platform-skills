@@ -11,6 +11,20 @@ export function assertSameSkillPaths(sourcePaths, candidatePaths) {
   }
 }
 
+// npm <= 11 prints `npm pack --json` as an array; npm 12 keys results by package name.
+export function parseNpmPackResult(stdout, packageName) {
+  const parsed = JSON.parse(stdout);
+  const result = Array.isArray(parsed)
+    ? parsed.find(candidate => candidate?.name === packageName)
+    : parsed?.[packageName];
+
+  if (typeof result?.filename !== 'string' || !Array.isArray(result.files)) {
+    throw new Error(`npm pack JSON did not contain tarball metadata for ${packageName}`);
+  }
+
+  return result;
+}
+
 export function parseNpmPublishDryRunVersion(stdout, packageName) {
   const parsed = JSON.parse(stdout);
   const candidates = [

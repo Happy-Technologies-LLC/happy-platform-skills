@@ -1,17 +1,22 @@
 ---
 name: script-execution
-version: 1.0.1
-description: Safe background script execution patterns including automated execution via sys_trigger, fix script generation, error handling, and logging best practices
+version: 1.1.0
+description: Run background scripts through the Scripts - Background processor with parsed output, scope selection, and record rollback, plus the sys_trigger fallback, fix scripts, and logging
 author: Happy Technologies LLC
-tags: [admin, scripts, automation, sys-trigger, fix-scripts, debugging, development]
+tags: [admin, scripts, automation, rollback, fix-scripts, debugging, development]
 platforms: [claude-code, claude-desktop, chatgpt, cursor, any]
 tools:
   mcp:
     - SN-Execute-Background-Script
     - SN-Create-Fix-Script
     - SN-Query-Table
+    - SN-Get-Record
     - SN-Create-Record
+    - SN-Move-Records-To-Update-Set
   rest:
+    - /sys.scripts.do
+    - /api/now/table/sys_script_execution_history
+    - /api/now/table/sys_rollback_context
     - /api/now/table/sys_trigger
     - /api/now/table/syslog
     - /api/now/table/sys_script_fix
@@ -26,9 +31,10 @@ estimated_time: 10-30 minutes
 
 ## Overview
 
-This skill covers safe and effective execution of background scripts in ServiceNow:
+This skill covers safe and effective execution of background scripts in ServiceNow®:
 
-- Automated script execution via sys_trigger (the breakthrough method)
+- Script execution through the Scripts - Background processor (`/sys.scripts.do`)
+- Record rollback, scope selection, and handling of unknown outcomes
 - Safe script patterns and templates
 - Fix script generation for manual execution
 - Error handling and logging best practices
@@ -41,7 +47,7 @@ This skill covers safe and effective execution of background scripts in ServiceN
 ## Prerequisites
 
 - **Roles:** `admin` (background script execution requires full admin)
-- **Access:** sys_trigger, syslog, sys_script_fix tables
+- **Access:** sys_script_execution_history, sys_rollback_context, syslog, sys_script_fix tables
 - **Knowledge:** GlideRecord API, ServiceNow server-side JavaScript
 - **Caution:** Background scripts run with elevated privileges - test carefully
 
@@ -49,29 +55,30 @@ This skill covers safe and effective execution of background scripts in ServiceN
 
 ### Method Comparison
 
-| Method | Automation | Speed | Use Case |
-|--------|------------|-------|----------|
-| sys_trigger | Full | ~1-2 sec | Preferred for all automated tasks |
-| UI endpoint | Full | ~1-2 sec | Fallback if trigger fails |
-| Fix Script | Manual | Variable | Audit trail, scheduled execution |
-| Scripts - Background | Manual | Immediate | One-time interactive testing |
+| Method | Automation | Rollback | Use Case |
+|--------|------------|----------|----------|
+| `/sys.scripts.do` processor (default) | Full | Yes, when records change | All automated script runs |
+| sys_trigger job (automatic fallback or `wait: false`) | Full | No | Processor unavailable; fire-and-forget |
+| Fix Script | Manual | No | Audit trail, reviewed or repeatable runs |
+| Scripts - Background page | Manual | Yes | One-time interactive testing |
+
+`now-sdk exec` (ServiceNow SDK 4.14.0) uses the same processor and records rollback by default; its `--scope` and
+`--reason` options match `scope` and `description` below.
 
 ## Procedure
 
 ### Phase 1: Automated Execution (Recommended)
 
-#### Step 1.1: Basic Script Execution
+#### Step 1.1: Run a Script
 
-The sys_trigger method creates a scheduled job that executes immediately and self-deletes.
+`SN-Execute-Background-Script` posts the script once to `/sys.scripts.do`, the processor behind
+**System Definition > Scripts - Background**, as the authenticated user in that user's own session.
 
 **Using MCP:**
 ```
 Tool: SN-Execute-Background-Script
 Parameters:
   script: |
-    gs.info('Hello from automated script execution!');
-
-    // Your logic here
     var count = 0;
     var gr = new GlideRecord('incident');
     gr.addQuery('active', true);
@@ -86,24 +93,107 @@ Parameters:
 
     gs.info('Total P1 incidents found: ' + count);
   description: Count active P1 incidents
-  execution_method: trigger
 ```
 
-**How It Works:**
-1. Creates a scheduled job in `sys_trigger` table
-2. Sets next_action to run immediately
-3. Trigger executes the script
-4. Script logs output to system logs
-5. Trigger auto-deletes after execution
+**Parameters:**
 
-#### Step 1.2: Verify Execution
+| Parameter | Default | Meaning |
+|-----------|---------|---------|
+| `script` | (required) | Server-side JavaScript to run |
+| `description` | none | Reason, appended to the script as a one-line comment and kept in Script Execution History |
+| `scope` | caller's current scope | `global`, an application scope name (e.g. `x_acme_app`), or a `sys_scope` sys_id; an unknown scope is rejected before anything runs |
+| `record_for_rollback` | `true` | Record the run's record changes in a rollback context |
+| `wait` | `true` | `false` skips the processor and schedules a fire-and-forget sys_trigger job |
 
-**Check System Logs:**
+**The result contains:**
+- Success or failure, and which method ran (processor, or the sys_trigger fallback and why)
+- Output lines from `gs.info()` (and `gs.print()` in global), and script or compilation errors
+- The scope the script ran in
+- A link to the run's `sys_script_execution_history` record
+- A link to its `sys_rollback_context` record, only when the script changed records and rollback was recorded
+
+Script errors are returned as tool errors; a failed run is never reported as success.
+
+Because the script runs in the caller's session, the caller's current update set is expected to capture tracked
+configuration writes (not verified). Set it first with `SN-Set-Update-Set` and confirm with `sys_update_xml` afterwards.
+
+#### Step 1.2: Choose a Scope
+
+| Target | Behavior |
+|--------|----------|
+| `global` | Runs; `gs.print()` and `gs.info()` both return output |
+| Custom application scope (`x_...`) | Runs in that scope; `gs.print()` is blocked in scoped scripts, so use `gs.info()` |
+| Store application scope owned by ServiceNow (e.g. `sn_cmdb_int_util`) | Refused with "not authorized"; the script does not run |
+
+A non-global `scope` is never handed to the sys_trigger fallback, because that path cannot honor it. When the processor
+refuses, the tool reports the script as not run.
+
+#### Step 1.3: Roll Back a Run
+
+With `record_for_rollback` left at `true`, a run that changes records returns a `sys_rollback_context` link. A run that
+changes nothing records no context. To undo the run's record changes, either open the rollback context record and use
+its **Rollback** button, or run the rollback server-side with rollback recording turned off:
+
+```
+Tool: SN-Execute-Background-Script
+Parameters:
+  script: |
+    var worker = new GlideRollbackWorker();
+    worker.setRollbackContextID('<rollback_context_sys_id>');
+    worker.setBackground(false);
+    worker.start();
+  description: Roll back run <rollback_context_sys_id>
+  record_for_rollback: false
+```
+
+**Verify the rollback:**
+```
+Tool: SN-Get-Record
+Parameters:
+  table_name: sys_rollback_context
+  sys_id: <rollback_context_sys_id>
+  fields: state
+```
+
+The `state` becomes `rolled_back`. Runs on the sys_trigger path record no rollback context, so plan an explicit undo
+script before using `wait: false`.
+
+#### Step 1.4: Handle an Unknown Outcome
+
+A timeout, HTTP 5xx, dropped connection, or unrecognized response returns **"Unknown outcome"**: the script may or may
+not have run, and the tool does not fall back.
+
+**Never re-run the script after an unknown outcome.** Check Script Execution History first:
+
+```
+Tool: SN-Query-Table
+Parameters:
+  table_name: sys_script_execution_history
+  query: ORDERBYDESCsys_created_on
+  limit: 5
+```
+
+Find the run by its `description` comment. If it ran, inspect its result and any rollback context. Re-run only after
+confirming it did not run. The instance cancels a processor run still going after four hours.
+
+#### Step 1.5: Understand the sys_trigger Fallback
+
+The tool hands the script to a sys_trigger job only when the processor provably did not run it: HTTP 401/403/404, a
+login page, a "not authorized" refusal for a global run, or a connection refused before sending. `wait: false` uses
+the same path on purpose. That job:
+
+- Runs in the scheduler's session, not the caller's, so tracked configuration writes may land in the **Default**
+  update set. Check `sys_update_xml` and move rows with `SN-Move-Records-To-Update-Set`.
+- Records no rollback context.
+- Reports through `syslog`: with `wait: true` the tool polls `syslog` for a completion marker and returns
+  `completed`, `failed`, or `timeout` plus captured logs; with `wait: false` it returns only the trigger details.
+
+**Check fallback output in System Logs:**
 ```
 Tool: SN-Query-Table
 Parameters:
   table_name: syslog
-  query: message=*automated script*^sys_created_on>javascript:gs.minutesAgo(5)
+  query: messageLIKEP1 incident^sys_created_on>javascript:gs.minutesAgo(5)
   fields: message,level,sys_created_on,source
   limit: 20
 ```
@@ -256,8 +346,7 @@ Parameters:
     var PROVIDED_CODE = 'INTENTIONALLY_WRONG';  // Must match to delete
 
     if (!DRY_RUN && PROVIDED_CODE !== CONFIRMATION_CODE) {
-      gs.error('SAFETY: Confirmation code mismatch. Aborting delete.');
-      return;
+      throw new Error('SAFETY: Confirmation code mismatch. Aborting delete.');
     }
 
     var gr = new GlideRecord(TABLE);
@@ -288,16 +377,17 @@ Parameters:
 
 ### Phase 3: Fix Script Generation
 
-#### Step 3.1: Create Fix Script for Audit Trail
+#### Step 3.1: Generate a Fix Script for Manual Execution
 
-When you need an audit trail or scheduled execution:
+When automated execution is unavailable or a person must review and run the script, `SN-Create-Fix-Script` writes it
+to a new file in the MCP server's `./scripts` directory. Paste it into **Scripts - Background** to run it.
 
 **Using MCP:**
 ```
 Tool: SN-Create-Fix-Script
 Parameters:
-  name: FIX_IncidentDataCleanup_20260206
-  script: |
+  script_name: FIX_IncidentDataCleanup_20260206
+  script_content: |
     // Fix Script: Clean up old resolved incidents
     // Author: Admin
     // Date: 2026-02-06
@@ -322,7 +412,7 @@ Parameters:
   description: Clean up old resolved incidents for data hygiene
 ```
 
-**Manual Fix Script Creation:**
+**Fix Script Record (audit trail, repeatable runs):**
 ```
 Tool: SN-Create-Record
 Parameters:
@@ -397,9 +487,11 @@ Parameters:
   description: Update incident priorities with full error handling
 ```
 
-#### Step 4.2: Transaction Rollback Pattern
+#### Step 4.2: Multi-Step Update with Manual Undo
 
-For complex updates that should succeed or fail together:
+For a processor run, `record_for_rollback` (Step 1.3) already lets you roll back every record change the run made.
+Use an in-script undo only when later steps must reverse earlier ones within the same run, or on the sys_trigger path,
+which records no rollback context:
 
 ```
 Tool: SN-Execute-Background-Script
@@ -500,6 +592,9 @@ Parameters:
 
 #### Step 5.2: Query Script Logs
 
+Processor runs return `gs.info()` output directly in the tool result. Query `syslog` for sys_trigger runs, for
+messages logged by code the script calls, or to search past runs.
+
 **Find Script Execution Logs:**
 ```
 Tool: SN-Query-Table
@@ -580,20 +675,20 @@ Parameters:
   description: Batch processing with progress tracking
 ```
 
-#### Step 6.2: Asynchronous Execution
+#### Step 6.2: Long-Running Work in Resumable Chunks
 
-For very long-running scripts, chain multiple executions:
+Keep each run short. Store progress, process one chunk per run, and run the same script again after checking the
+previous result. A processor run still going after four hours is cancelled by the instance.
 
 ```
 Tool: SN-Execute-Background-Script
 Parameters:
   script: |
-    // Self-scheduling pattern for long operations
+    // Resumable chunk: safe to run repeatedly until it reports completion
     var RECORDS_PER_EXECUTION = 1000;
-    var DELAY_SECONDS = 10;
+    var TRACKER = 'x_custom.migration.last_processed';
 
-    // Get or create tracking property
-    var tracker = gs.getProperty('x_custom.migration.last_processed', '');
+    var tracker = gs.getProperty(TRACKER, '');
 
     var gr = new GlideRecord('incident');
     if (tracker) {
@@ -612,31 +707,19 @@ Parameters:
       lastProcessed = gr.sys_created_on.toString();
     }
 
-    if (count > 0) {
-      // Update tracker
-      gs.setProperty('x_custom.migration.last_processed', lastProcessed);
-      gs.info('Processed ' + count + ' records. Last: ' + lastProcessed);
-
-      // Schedule next execution
-      if (count == RECORDS_PER_EXECUTION) {
-        var trigger = new GlideRecord('sys_trigger');
-        trigger.initialize();
-        trigger.name = 'Continue Migration ' + new GlideDateTime().getDisplayValue();
-        trigger.next_action = new GlideDateTime();
-        trigger.next_action.addSeconds(DELAY_SECONDS);
-        trigger.script = 'gs.include("MigrationScript");';  // Call script include
-        trigger.trigger_type = 0;  // Run once
-        trigger.insert();
-        gs.info('Scheduled next execution in ' + DELAY_SECONDS + ' seconds');
-      } else {
-        gs.info('Migration complete!');
-        gs.setProperty('x_custom.migration.last_processed', '');  // Reset
-      }
+    if (count == RECORDS_PER_EXECUTION) {
+      gs.setProperty(TRACKER, lastProcessed);
+      gs.info('Processed ' + count + ' records. Last: ' + lastProcessed + '. Run again to continue.');
     } else {
-      gs.info('No more records to process');
+      gs.setProperty(TRACKER, '');
+      gs.info('Migration complete. Final chunk: ' + count + ' records.');
     }
-  description: Self-scheduling migration script
+  description: Resumable incident migration chunk
 ```
+
+Run the next chunk only after the previous run returned a result. If a run returns an unknown outcome, check Script
+Execution History before continuing (Step 1.4). For unattended recurring or self-continuing work, use a scheduled job
+instead (`development/scheduled-jobs`).
 
 ## Script Templates
 
@@ -727,10 +810,14 @@ gs.info((DRY_RUN ? '[DRY RUN] ' : '') + 'Updated ' + updated + ' records');
 
 | Operation | MCP Tool | Purpose |
 |-----------|----------|---------|
-| Execute | SN-Execute-Background-Script | Run server-side JavaScript |
-| Fix Script | SN-Create-Fix-Script | Create auditable script |
-| Query Logs | SN-Query-Table | Check execution results |
-| Create Record | SN-Create-Record | Manual fix script creation |
+| Execute | SN-Execute-Background-Script | Run server-side JavaScript through `/sys.scripts.do` |
+| Roll Back | SN-Execute-Background-Script | Run `GlideRollbackWorker` with `record_for_rollback: false` |
+| Check Rollback | SN-Get-Record | Read `sys_rollback_context` state |
+| Check History | SN-Query-Table | Read `sys_script_execution_history` after an unknown outcome |
+| Query Logs | SN-Query-Table | Read `syslog` for sys_trigger runs |
+| Move Captured Rows | SN-Move-Records-To-Update-Set | Move sys_trigger captures out of the Default update set |
+| Fix Script | SN-Create-Fix-Script | Write a script file for manual execution |
+| Create Record | SN-Create-Record | Create a `sys_script_fix` record |
 
 ## Best Practices
 
@@ -741,24 +828,48 @@ gs.info((DRY_RUN ? '[DRY RUN] ' : '') + 'Updated ' + updated + ' records');
 - **Document Scripts:** Include author, date, ticket reference in comments
 - **Avoid Hardcoding:** Use variables for sys_ids and queries
 - **Test in Sub-Production:** Never run untested scripts in production
-- **Use Transactions:** Consider rollback patterns for multi-step operations
+- **Keep Rollback On:** Leave `record_for_rollback` at `true` for any run that changes data
+- **Never Re-Run Blindly:** After an unknown outcome, check Script Execution History before running again
 
 ## Troubleshooting
 
 ### Script Doesn't Execute
 
-**Symptom:** No output in system logs
+**Symptom:** The tool reports the script was NOT run
 **Causes:**
-- sys_trigger permissions
-- Script syntax error before any logging
+- The processor answered 401/403/404, a login page, or "not authorized"; for a global run the tool falls back to
+  sys_trigger and says so in the result
+- A non-global `scope` was refused (store application scopes owned by ServiceNow answer "not authorized"); no
+  fallback is used
+- `scope` names no `sys_scope` record and was rejected before sending
+- The user lacks the `admin` role
+**Solution:** Use a custom application scope or `global`, confirm the user has `admin`, and read the reason in the
+result before retrying.
+
+### Unknown Outcome
+
+**Symptom:** "Unknown outcome" after a timeout, HTTP 5xx, or unrecognized response
+**Solution:** Do not re-run. Check `sys_script_execution_history` (Step 1.4) and re-run only if the script did not run.
+
+### Scoped Script Shows No Output
+
+**Symptom:** A script in an `x_` scope runs but returns no output
+**Cause:** `gs.print()` is blocked in scoped scripts
+**Solution:** Use `gs.info()`.
+
+### Configuration Changes Captured in the Default Update Set
+
+**Symptom:** Changes made by a sys_trigger run appear in the Default update set
+**Cause:** The sys_trigger job runs in the scheduler's session
 **Solution:**
 ```
 Tool: SN-Query-Table
 Parameters:
-  table_name: sys_trigger
-  query: nameLIKEMCP^sys_created_on>javascript:gs.minutesAgo(5)
-  fields: name,state,next_action,script
+  table_name: sys_update_xml
+  query: update_set.name=Default^sys_created_on>javascript:gs.minutesAgo(15)
+  fields: sys_id,target_name,type,action
 ```
+Move the rows with `SN-Move-Records-To-Update-Set`.
 
 ### Script Times Out
 
@@ -773,7 +884,7 @@ Parameters:
 
 ### No Logs Appearing
 
-**Symptom:** Script runs but no gs.info() output visible
+**Symptom:** A sys_trigger run completes but no gs.info() output is visible
 **Causes:**
 - Log level filtering
 - Looking in wrong time range

@@ -1,7 +1,7 @@
 ---
 name: natural-language-queries
-version: 1.0.2
-description: Use parser-verified Happy Platform MCP 5.1 natural-language search phrases and fall back to precise encoded table queries
+version: 1.0.3
+description: Use parser-verified Happy Platform MCP 6.1 natural-language search phrases and fall back to precise encoded table queries
 author: Happy Technologies LLC
 tags: [itsm, search, natural-language, queries]
 platforms: [claude-code, claude-desktop]
@@ -16,19 +16,19 @@ estimated_time: 5-10 minutes
 
 ## Overview
 
-Happy Platform MCP 5.1 converts a bounded set of natural-language phrases into
+Happy Platform MCP 6.1 converts a bounded set of natural-language phrases into
 ServiceNow encoded conditions. Use `SN-Natural-Language-Search` for the atomic,
 parser-verified patterns below. Use `SN-Query-Table` whenever exact operators,
 multiple branches, exclusions, field-specific text behavior, or deterministic
 ordering matter.
 
 The authoritative fixtures are packaged in
-`contracts/happy-platform-mcp-5.1.0-natural-language.json` and can be checked
+`contracts/happy-platform-mcp-6.1.0-natural-language.json` and can be checked
 against the sibling MCP source with `npm run contract:nl-check`.
 
 ## Prerequisites
 
-- Happy Platform MCP 5.1.0 configured for the target instance
+- Happy Platform MCP 6.1.0 configured for the target instance
 - Read access to the target table
 - The exact table name
 - A small result limit and explicit return fields for exploratory searches
@@ -37,7 +37,7 @@ against the sibling MCP source with `npm run contract:nl-check`.
 
 ### 1. Choose one parser-verified phrase
 
-The following atomic phrases parse completely in MCP 5.1.0:
+The following atomic phrases parse completely in MCP 6.1.0:
 
 | Intent | Supported phrase | Encoded condition produced |
 |---|---|---|
@@ -59,12 +59,12 @@ The following atomic phrases parse completely in MCP 5.1.0:
 | Category | `category is Software` | `categoryLIKESoftware` |
 | Assignment group | `assignment group is Network Team` | `assignment_group.nameLIKENetwork Team` |
 
-The mappings above are literal v5.1 parser outputs. For example, “high” maps to
+The mappings above are literal v6.1 parser outputs. For example, “high” maps to
 priority value 2, while “critical” maps to value 1.
 
 ### 2. Execute a bounded search
 
-Always provide `table`; the v5.1 argument is not named `table_name`. Specify the
+Always provide `table`; the v6.1 argument is not named `table_name`. Specify the
 target instance for live or concurrent work.
 
 ```text
@@ -106,7 +106,7 @@ Parameters:
 ```
 
 Do not infer that two separately supported phrases can be freely composed. The
-v5.1 parser processes each pattern at most once, and leftover words can change
+v6.1 parser processes each pattern at most once, and leftover words can change
 or weaken the result.
 
 ### 4. Use encoded queries for precision
@@ -166,7 +166,7 @@ natural-language result has been verified against known records.
 
 ### No encoded condition is returned
 
-The phrase did not match a v5.1 pattern. Use one fixture-backed atomic phrase or
+The phrase did not match a v6.1 pattern. Use one fixture-backed atomic phrase or
 switch to `SN-Query-Table` with a reviewed encoded query.
 
 ### A condition is returned with leftover text

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "package": "happy-platform-mcp",
-  "version": "5.1.0",
+  "version": "6.1.0",
   "source": "src/natural-language.js",
-  "scope": "Atomic phrases that parse completely in MCP 5.1.0",
+  "scope": "Atomic phrases that parse completely in MCP 6.1.0",
   "supported": [
     { "query": "high priority", "table": "incident", "encodedQuery": "priority=2", "unmatchedText": "" },
     { "query": "P1", "table": "incident", "encodedQuery": "priority=1", "unmatchedText": "" },
@@ -26,7 +26,7 @@
   ],
   "precisionOnly": [
     { "query": "priority is 1", "table": "incident", "observedEncodedQuery": "", "observedUnmatchedText": "priority is 1" },
-    { "query": "state not equals Closed", "table": "incident", "observedEncodedQuery": "7", "observedUnmatchedText": "state not equals" },
+    { "query": "state not equals Closed", "table": "incident", "observedEncodedQuery": "state=7", "observedUnmatchedText": "state not equals" },
     { "query": "description starts with Error", "table": "incident", "observedEncodedQuery": "short_descriptionLIKEError^ORdescriptionLIKEError", "observedUnmatchedText": "description starts" },
     { "query": "assigned to is empty", "table": "incident", "observedEncodedQuery": "assigned_to.nameLIKEis empty", "observedUnmatchedText": "" },
     { "query": "P1 or P2", "table": "incident", "observedEncodedQuery": "priority=1", "observedUnmatchedText": "P2" },

@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
   "package": "happy-platform-mcp",
-  "version": "5.1.0",
+  "version": "6.1.0",
   "source": {
     "repository": "Happy-Technologies-LLC/happy-platform-mcp",
     "files": [
       "src/mcp-server-consolidated.js",
       "src/docs/tool-definitions.js",
-      "src/instance-tools.js"
+      "src/instance-tools.js",
+      "src/cicd-atf.js"
     ]
   },
   "tools": [
@@ -41,6 +42,9 @@
     "SN-Docs-Sync",
     "SN-Execute-Background-Script",
     "SN-Explain-Field",
+    "SN-Get-ATF-Results",
+    "SN-Get-ATF-Test-Logs",
+    "SN-Get-CICD-Progress",
     "SN-Get-Current-Instance",
     "SN-Get-Current-Update-Set",
     "SN-Get-Incident",
@@ -61,6 +65,8 @@
     "SN-Query-Table",
     "SN-Register-Instance",
     "SN-Resolve-Incident",
+    "SN-Run-ATF-Suite",
+    "SN-Run-ATF-Test",
     "SN-Set-Current-Application",
     "SN-Set-Instance",
     "SN-Set-Update-Set",

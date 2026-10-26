@@ -1,6 +1,6 @@
 ---
 name: risk-assessment-summarization
-version: 1.0.2
+version: 1.0.3
 description: Summarize risk assessments with scoring, trends, heat map data, and mitigation recommendations covering inherent vs residual risk analysis
 author: Happy Technologies LLC
 tags: [grc, risk, assessment, summarization, heat-map, mitigation, inherent-risk, residual-risk]
@@ -389,7 +389,7 @@ GET /api/now/table/sn_risk_event?sysparm_query=sys_created_on>=javascript:gs.day
 | Query Risk Definitions | SN-Query-Table | GET /api/now/table/sn_risk_definition |
 | Query Risk Events | SN-Query-Table | GET /api/now/table/sn_risk_event |
 | Search Risks | SN-Natural-Language-Search | N/A |
-| Complex Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Complex Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

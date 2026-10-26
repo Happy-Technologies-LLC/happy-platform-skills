@@ -1,6 +1,6 @@
 ---
 name: risk-event-summarization
-version: 1.0.1
+version: 1.0.2
 description: Summarize risk events with impact assessment, affected controls, contributing factors, and recommended mitigation actions
 author: Happy Technologies LLC
 tags: [grc, risk, event, summarization, impact-assessment, mitigation, controls]
@@ -341,7 +341,7 @@ Parameters:
 | Query Events | SN-Query-Table | GET /api/now/table/sn_risk_event |
 | Query Controls | SN-Query-Table | GET /api/now/table/sn_compliance_control |
 | Query Risks | SN-Query-Table | GET /api/now/table/sn_grc_risk |
-| Aggregate Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Aggregate Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Search Events | SN-Natural-Language-Search | N/A |
 
 ## Best Practices

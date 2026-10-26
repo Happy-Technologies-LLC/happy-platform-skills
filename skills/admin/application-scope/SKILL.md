@@ -1,6 +1,6 @@
 ---
 name: application-scope
-version: 1.0.0
+version: 1.0.1
 description: Manage scoped application development including setting application context and update set alignment
 author: Happy Technologies LLC
 tags: [admin, scope, application, development, scoped-app]
@@ -77,7 +77,9 @@ Parameters:
   app_sys_id: abc123def456...
 ```
 
-**Important:** This is an automated operation using the sys_trigger mechanism. It executes in approximately 1-2 seconds.
+**Important:** The tool switches scope through the UI application picker and reads the picker back in the same session.
+It reports success, with the previous scope, only when the change took effect; otherwise it returns an error. Pass
+`global` as `app_sys_id` to return to the Global scope.
 
 **Verification:**
 ```
@@ -128,6 +130,10 @@ Tool: SN-Set-Update-Set
 Parameters:
   update_set_sys_id: xyz789ghi012...
 ```
+
+The tool also uses the UI picker and verifies the change in the same session; the response names the previous update
+set. If the change cannot be verified, no success is reported and the tool writes a fix script to `./scripts` for manual
+execution in Scripts - Background. It has no scheduled-job fallback.
 
 **Verification:**
 ```
@@ -460,7 +466,7 @@ Parameters:
   query: scope=x_myco_custom_app
   fields: sys_id,name,scope,version
 
-# 2. Set as current application (automated via sys_trigger)
+# 2. Set as current application (UI picker, verified in the same session)
 Tool: SN-Set-Current-Application
 Parameters:
   app_sys_id: abc123def456...
@@ -472,7 +478,7 @@ Parameters:
   query: application=abc123def456...^state=in progress
   fields: sys_id,name
 
-# 4. Set update set (automated via sys_trigger)
+# 4. Set update set (UI picker, verified in the same session)
 Tool: SN-Set-Update-Set
 Parameters:
   update_set_sys_id: xyz789ghi012...

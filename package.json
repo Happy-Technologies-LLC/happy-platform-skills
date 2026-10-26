@@ -1,6 +1,6 @@
 {
   "name": "happy-platform-skills",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Reusable development patterns and automation recipes for enterprise platforms - works with Claude, ChatGPT, and any agentic AI system",
   "main": "src/index.js",
   "type": "module",
@@ -23,7 +23,7 @@
     "contract:refresh": "node scripts/refresh-mcp-tool-contract.mjs",
     "contract:check": "node scripts/refresh-mcp-tool-contract.mjs --check",
     "contract:nl-check": "node scripts/check-natural-language-contract.mjs",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
   },
   "keywords": [
     "platform-skills",
@@ -66,7 +66,7 @@
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "gray-matter": "^4.0.3",
-    "js-yaml": "3.15.0"
+    "js-yaml": "3.15.2"
   },
   "devDependencies": {
     "jest": "^30.0.0",

@@ -1,6 +1,6 @@
 ---
 name: security-recommended-actions
-version: 1.0.3
+version: 1.0.4
 description: Generate recommended actions for security incidents based on threat type, severity, affected assets, and playbook alignment. Include containment, eradication, and recovery steps
 author: Happy Technologies LLC
 tags: [secops, security, incident-response, recommended-actions, containment, eradication, recovery, playbook]
@@ -349,7 +349,7 @@ Parameters:
 | Query Assets | SN-Query-Table | GET /api/now/table/cmdb_ci |
 | Query IOCs | SN-Query-Table | GET /api/now/table/sn_ti_observable |
 | Query Vulnerabilities | SN-Query-Table | GET /api/now/table/sn_vul_vulnerable_item |
-| Generate Actions | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Generate Actions | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Post Actions | SN-Add-Work-Notes | PATCH /api/now/table/sn_si_incident/{sys_id} |
 
 ## Best Practices

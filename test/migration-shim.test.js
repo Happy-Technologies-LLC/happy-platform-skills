@@ -4,7 +4,7 @@ import { spawnSync } from 'child_process';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import semver from 'semver';
-import { parseNpmPublishDryRunVersion } from '../scripts/package-verification-lib.mjs';
+import { parseNpmPackResult, parseNpmPublishDryRunVersion } from '../scripts/package-verification-lib.mjs';
 
 const repositoryRoot = new URL('..', import.meta.url).pathname;
 const shimRoot = new URL('../migration/happy-servicenow-skills', import.meta.url).pathname;
@@ -23,8 +23,8 @@ beforeAll(async () => {
   shimPublishDryRun = run('npm', ['publish', '--dry-run', '--json'], shimRoot);
   expect(packagePack.status).toBe(0);
   expect(shimPack.status).toBe(0);
-  const packageTarball = JSON.parse(packagePack.stdout)[0].filename;
-  shimPackResult = JSON.parse(shimPack.stdout)[0];
+  const packageTarball = parseNpmPackResult(packagePack.stdout, 'happy-platform-skills').filename;
+  shimPackResult = parseNpmPackResult(shimPack.stdout, 'happy-servicenow-skills');
   const shimTarball = shimPackResult.filename;
   expect(run('npm', ['init', '--yes'], consumerDir).status).toBe(0);
   expect(run('npm', [
@@ -93,14 +93,15 @@ describe('happy-servicenow-skills migration shim', () => {
     expect(result.stderr).toBe('');
   });
 
-  test('forwards the legacy CLI to the exported current CLI', () => {
+  test('forwards the legacy CLI to the exported current CLI', async () => {
+    const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
     const result = run(process.execPath, [
       join(consumerDir, 'node_modules', 'happy-servicenow-skills', 'cli.js'),
       '--version'
     ], consumerDir);
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain('2.4.0');
+    expect(result.stdout).toContain(version);
     expect(result.stderr).toContain('[DEPRECATED]');
   });
 });

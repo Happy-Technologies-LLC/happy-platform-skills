@@ -6,7 +6,7 @@ import { tmpdir } from 'os';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { SkillRegistry } from '../src/registry.js';
-import { assertSameSkillPaths } from './package-verification-lib.mjs';
+import { assertSameSkillPaths, parseNpmPackResult } from './package-verification-lib.mjs';
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -34,7 +34,7 @@ const temporaryRoot = await mkdtemp(join(tmpdir(), 'happy-platform-skills-packag
 
 try {
   const packOutput = run('npm', ['pack', '--json', '--pack-destination', temporaryRoot]);
-  const [packResult] = JSON.parse(packOutput);
+  const packResult = parseNpmPackResult(packOutput, 'happy-platform-skills');
   const packagedPaths = new Set(packResult.files.map(file => file.path));
   const tarballPath = join(temporaryRoot, packResult.filename);
 
@@ -54,11 +54,10 @@ try {
     'scripts/package-verification-lib.mjs',
     'scripts/refresh-mcp-tool-contract.mjs',
     'scripts/check-natural-language-contract.mjs',
-    'contracts/happy-platform-mcp-5.1.0.json',
-    'contracts/happy-platform-mcp-5.1.0-natural-language.json',
+    'contracts/happy-platform-mcp-6.1.0.json',
+    'contracts/happy-platform-mcp-6.1.0-natural-language.json',
     'contracts/README.md',
-    'skills/itsm/incident-triage/SKILL.md',
-    'skills/development/fluent-sdk/vendor/now-sdk-explain.md'
+    'skills/itsm/incident-triage/SKILL.md'
   ];
 
   for (const requiredPath of requiredPaths) {
@@ -83,11 +82,11 @@ try {
   const installedPackageJson = JSON.parse(
     await readFile(join(consumerDir, 'node_modules', 'happy-platform-skills', 'package.json'), 'utf8')
   );
-  assert(installedPackageJson.dependencies['js-yaml'] === '3.15.0', 'Published package must pin js-yaml 3.15.0');
+  assert(installedPackageJson.dependencies['js-yaml'] === '3.15.2', 'Published package must pin js-yaml 3.15.2');
 
   const dependencyTree = JSON.parse(run('npm', ['ls', 'js-yaml', '--all', '--json'], consumerDir));
   const installedJsYaml = dependencyTree.dependencies?.['happy-platform-skills']?.dependencies?.['js-yaml'];
-  assert(installedJsYaml?.version === '3.15.0', 'Clean consumer did not resolve js-yaml 3.15.0');
+  assert(installedJsYaml?.version === '3.15.2', 'Clean consumer did not resolve js-yaml 3.15.2');
 
   run(process.execPath, [
     '--input-type=module',

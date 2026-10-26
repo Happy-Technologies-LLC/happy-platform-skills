@@ -1,7 +1,7 @@
 ---
 name: mcp-server-installation
-version: 1.1.0
-description: Install Happy Platform MCP v5.1 and configure secure, keychain-backed ServiceNow instance access
+version: 1.2.0
+description: Install Happy Platform MCP v6.1 and configure secure, keychain-backed ServiceNow instance access
 author: Happy Technologies LLC
 tags: [development, mcp, installation, servicenow, configuration, authentication]
 platforms: [claude-code, claude-desktop, cursor, any]
@@ -19,16 +19,16 @@ complexity: intermediate
 estimated_time: 10-30 minutes
 ---
 
-# Happy Platform MCP v5.1 Installation
+# Happy Platform MCP v6.1 Installation
 
 ## Overview
 
-Install Happy Platform MCP v5.1, register one or more ServiceNow instances, and connect an MCP host without exposing authentication material to the model, MCP messages, logs, shell history, or client JSON. Keep the MCP-first policy: use live `SN-*` tools for ServiceNow work after local setup; use raw REST only when no MCP tool can perform the operation and the caller already has a locally managed credential helper.
+Install Happy Platform MCP v6.1, register one or more ServiceNow instances, and connect an MCP host without exposing authentication material to the model, MCP messages, logs, shell history, or client JSON. Keep the MCP-first policy: use live `SN-*` tools for ServiceNow work after local setup; use raw REST only when no MCP tool can perform the operation and the caller already has a locally managed credential helper.
 
 ## Prerequisites
 
 - Node.js >= 20
-- Happy Platform MCP `5.1.0` or a compatible later 5.x release
+- Happy Platform MCP `6.1.0` or a compatible later 6.x release
 - A local interactive terminal for masked prompts
 - An OS keychain available to the current user
 - An MCP-capable client and appropriate ServiceNow access
@@ -40,11 +40,15 @@ Install Happy Platform MCP v5.1, register one or more ServiceNow instances, and 
 Use npm for a normal installation:
 
 ```bash
-npm install -g happy-platform-mcp@5.1.0
+npm install -g happy-platform-mcp@6.1.0
 happy-platform-mcp --version
 ```
 
-An MCP host can instead launch the package with `npx -y happy-platform-mcp@5.1.0`. Do not add authentication material to its arguments or environment block.
+An MCP host can instead launch the package with `npx -y happy-platform-mcp@6.1.0`. Do not add authentication material to its arguments or environment block.
+
+The `happy-platform-mcp` command serves the stdio transport, which needs no HTTP token. Since 6.0, the HTTP/SSE transport (a source checkout's `npm start` or the Docker image) refuses to start unless `HAPPY_MCP_API_TOKEN` in the server environment holds 64 hex characters generated with `openssl rand -hex 32` (or 43 base64url characters). Every HTTP client, probe, and health check must send that value as a bearer token in the `Authorization` header, and `HAPPY_MCP_ALLOWED_HOSTS` must list the host authority clients use behind a container port or proxy. Keep the token in a secret store, never in client JSON, prompts, or documentation. HTTP serves one trusted operator; shared multi-user hosting is unsupported.
+
+When upgrading from 5.x, each public `authorization_code` instance prompts for browser sign-in once, because refresh tokens are now bound to the OAuth identity. If an instance uses an external identity provider, list its origin in `SERVICENOW_OAUTH_TRUSTED_ORIGINS` for both the server and the `happy-platform-mcp instance` CLI.
 
 ### Step 2: Choose an Authentication Mode
 
@@ -81,7 +85,7 @@ The default version 1 user registry is `~/.config/happy-platform-mcp/instances.j
   "mcpServers": {
     "happy-platform-mcp": {
       "command": "npx",
-      "args": ["-y", "happy-platform-mcp@5.1.0"],
+      "args": ["-y", "happy-platform-mcp@6.1.0"],
       "env": {
         "HAPPY_CONFIG_PATH": "~/.config/happy-platform-mcp/instances.json"
       }
@@ -90,7 +94,7 @@ The default version 1 user registry is `~/.config/happy-platform-mcp/instances.j
 }
 ```
 
-The package-local `config/servicenow-instances.json` is a read-only legacy migration input, never the writable v5.1 registry. With the automatic package-legacy-to-user-registry path, `happy-platform-mcp instance migrate` moves credentials into the OS keychain and leaves the legacy source untouched. If an override points at the same plaintext source and destination, migration refuses before writing; select a distinct target or recreate each instance with `instance add`. Never teach manual plaintext registry editing.
+The package-local `config/servicenow-instances.json` is a read-only legacy migration input, never the writable user registry. With the automatic package-legacy-to-user-registry path, `happy-platform-mcp instance migrate` moves credentials into the OS keychain and leaves the legacy source untouched. If an override points at the same plaintext source and destination, migration refuses before writing; select a distinct target or recreate each instance with `instance add`. Never teach manual plaintext registry editing.
 
 ### Step 4: Start Normally or in Docs-Only Mode
 
@@ -104,13 +108,13 @@ When neither a registry/config nor legacy environment credentials exist, stdio a
 }
 ```
 
-Use `HAPPY_MCP_DOCS_ONLY=true`; the v5.1 `--docs-only` flag does not reliably override an existing registry. Docs-only mode exposes the documentation and safe registration tools without creating a live ServiceNow client.
+Use `HAPPY_MCP_DOCS_ONLY=true`; the `--docs-only` argument does not force docs-only mode in 6.1.0 and does not override an existing registry. Docs-only mode exposes the documentation and safe registration tools without creating a live ServiceNow client.
 
 ### Step 5: Use Safe MCP Registration
 
 `SN-Register-Instance` is metadata-only and rejects secret fields. It normally persists metadata and performs a live reload. A server that started in docs-only mode must restart before live ServiceNow tools become available.
 
-There is a v5.1 bootstrap constraint: credential-backed registration checks for credential references before it writes new metadata, while `instance credential set` requires an already-registered name. Therefore:
+There is a 6.1.0 bootstrap constraint: credential-backed registration checks for credential references before it writes new metadata, while `instance credential set` requires an already-registered name. Therefore:
 
 - Use local `instance add` for Basic, `client_credentials`, and OAuth password.
 - Direct `SN-Register-Instance` is reliable for public `authorization_code`, which has no static client credential.
@@ -165,6 +169,8 @@ Parameters:
 | Metadata exists but authentication fails | Run `instance credential set <name>` locally, then `instance test <name>` |
 | Only docs tools appear | Remove forced docs-only mode if present and restart after a usable registration exists |
 | Migration refuses the path | Use the automatic legacy-to-default-user path or select a distinct metadata-only target |
+| HTTP/SSE server will not start or rejects requests | Set a generated `HAPPY_MCP_API_TOKEN` on the server, send it as a bearer token from every client and health check, and list the client host authority in `HAPPY_MCP_ALLOWED_HOSTS` |
+| Authorization-code instance asks to sign in again after upgrading | Expected once after moving from 5.x; complete the browser sign-in |
 
 ## Related Skills
 

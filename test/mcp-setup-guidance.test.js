@@ -62,7 +62,7 @@ function positiveDocsOnlyRecommendations(markdown) {
   return recommendations;
 }
 
-describe('Happy Platform MCP v5.1 setup guidance', () => {
+describe('Happy Platform MCP setup guidance', () => {
   test.each(Object.entries(contents))('%s contains no secret-bearing examples', (_name, markdown) => {
     const forbidden = [
       /["'](?:password|clientSecret|client_secret|access_token|token)["']\s*:/i,
@@ -155,7 +155,7 @@ describe('Happy Platform MCP v5.1 setup guidance', () => {
     expect(contents.installation).toMatch(/leaves? the legacy source untouched/i);
   });
 
-  test('installation covers the four v5.1 authentication choices', () => {
+  test('installation covers the four authentication choices', () => {
     for (const authMode of ['Basic', 'client_credentials', 'OAuth password', 'authorization_code']) {
       expect(contents.installation).toContain(authMode);
     }
@@ -183,7 +183,7 @@ describe('Happy Platform MCP v5.1 setup guidance', () => {
   });
 
   test('allows an explicit warning about the unreliable docs-only flag', () => {
-    const policy = 'The v5.1 `--docs-only` flag is unreliable and must not be used; set `HAPPY_MCP_DOCS_ONLY=true` instead.';
+    const policy = 'The `--docs-only` flag is unreliable and must not be used; set `HAPPY_MCP_DOCS_ONLY=true` instead.';
     expect(positiveDocsOnlyRecommendations(policy)).toEqual([]);
   });
 
@@ -192,7 +192,7 @@ describe('Happy Platform MCP v5.1 setup guidance', () => {
     expect(positiveDocsOnlyRecommendations(mixed)).toHaveLength(1);
   });
 
-  test('instance routing uses the live v5.1 tools and concurrency semantics', () => {
+  test('instance routing uses the live tools and concurrency semantics', () => {
     expect(contents.instances).not.toContain('SN-List-Instances');
     expect(contents.instances).toContain('SN-Set-Instance');
     expect(contents.instances).toContain('SN-Get-Current-Instance');
@@ -211,7 +211,7 @@ describe('Happy Platform MCP v5.1 setup guidance', () => {
     }
   });
 
-  test('touched MCP tool names use the live v5.1 aliases', () => {
+  test('touched MCP tool names use the live aliases', () => {
     const guidance = Object.values(contents).join('\n');
     expect(guidance).not.toMatch(/\bSN-Read-Record\b/);
     expect(guidance).not.toMatch(/\bSN-NL-Search\b/);

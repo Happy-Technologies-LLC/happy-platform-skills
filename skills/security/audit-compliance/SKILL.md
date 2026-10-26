@@ -1,6 +1,6 @@
 ---
 name: audit-compliance
-version: 1.0.2
+version: 1.0.3
 description: Comprehensive audit trail analysis, user activity tracking, compliance reporting, and anomaly detection for ServiceNow environments
 author: Happy Technologies LLC
 tags: [security, audit, compliance, monitoring, anomaly-detection, soc, governance]
@@ -518,7 +518,7 @@ Parameters:
 |-----------|----------|---------------|
 | Query Audit | SN-Query-Table | GET /sys_audit |
 | NL Search | SN-Natural-Language-Search | N/A |
-| Complex Analysis | SN-Execute-Background-Script | POST /sys_trigger |
+| Complex Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /sys_dictionary |
 | Create Alert | SN-Create-Record | POST /sn_si_incident |
 

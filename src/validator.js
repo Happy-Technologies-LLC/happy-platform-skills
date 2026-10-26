@@ -16,7 +16,7 @@ const REPOSITORY_ROOT = join(__dirname, '..');
 const PACKAGE_MANIFEST = JSON.parse(await readFile(join(REPOSITORY_ROOT, 'package.json'), 'utf8'));
 const PACKAGED_FILE_RULES = PACKAGE_MANIFEST.files || [];
 const MCP_TOOL_CONTRACT = JSON.parse(await readFile(
-  join(REPOSITORY_ROOT, 'contracts', 'happy-platform-mcp-5.1.0.json'),
+  join(REPOSITORY_ROOT, 'contracts', 'happy-platform-mcp-6.1.0.json'),
   'utf8'
 ));
 const SUPPORTED_MCP_TOOLS = new Set(MCP_TOOL_CONTRACT.tools);

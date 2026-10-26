@@ -1,6 +1,6 @@
 ---
 name: control-objective-management
-version: 1.0.2
+version: 1.0.3
 description: Manage control objectives including creation, assessment, effectiveness evaluation, regulatory mapping, and gap identification across SOX, GDPR, and HIPAA frameworks
 author: Happy Technologies LLC
 tags: [grc, compliance, control-objective, sox, gdpr, hipaa, control-gap, effectiveness]
@@ -434,7 +434,7 @@ Content-Type: application/json
 | Update Objective | SN-Update-Record | PATCH /api/now/table/sn_compliance_control_objective |
 | Query Controls | SN-Query-Table | GET /api/now/table/sn_compliance_control |
 | Query Citations | SN-Query-Table | GET /api/now/table/sn_compliance_citation |
-| Gap Analysis | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Gap Analysis | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

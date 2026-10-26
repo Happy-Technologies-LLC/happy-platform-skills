@@ -19,7 +19,7 @@ describe('release-facing documentation', () => {
     expect(Object.values(documentedCounts).reduce((sum, count) => sum + count, 0)).toBe(184);
     expect(readme).toContain('console.log(skill.getInstructions());');
     expect(readme).not.toContain('skill.instructions');
-    expect(readme).toMatch(/exactly 55 live MCP tools/);
+    expect(readme).toMatch(/exactly 60 live MCP tools/);
     expect(readme).toMatch(/six docs-only tools/);
   });
 

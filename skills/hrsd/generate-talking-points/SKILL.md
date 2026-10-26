@@ -1,6 +1,6 @@
 ---
 name: generate-talking-points
-version: 1.0.2
+version: 1.0.3
 description: Generate manager talking points for employee reviews, 1:1 meetings, and performance discussions based on talent profiles, goals, feedback, and performance metrics
 author: Happy Technologies LLC
 tags: [hrsd, talent, performance, talking-points, review, goals, feedback, manager, one-on-one]
@@ -257,7 +257,7 @@ Parameters:
 | Query Feedback | SN-Query-Table | GET /api/now/table/sn_hr_talent_feedback |
 | Query Reviews | SN-Query-Table | GET /api/now/table/sn_hr_talent_review |
 | Search by Theme | SN-Natural-Language-Search | N/A |
-| Generate Summary | SN-Execute-Background-Script | POST /api/now/table/sys_trigger |
+| Generate Summary | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Schema Discovery | SN-Discover-Table-Schema | GET /api/now/table/sys_dictionary |
 
 ## Best Practices

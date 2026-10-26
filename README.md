@@ -184,14 +184,14 @@ Skills are designed to work across multiple AI platforms:
 | **Total Skills** | 184 |
 | **Categories** | 23 |
 | **Platforms Supported** | 5+ |
-| **Live MCP Tools** | 55 |
+| **Live MCP Tools** | 60 |
 | **Docs-only MCP Tools** | 6 |
 
 ---
 
 ## MCP Tool Contract
 
-The bundled Happy Platform MCP v5.1 contract contains exactly 55 live MCP tools. Docs-only startup exposes exactly six docs-only tools: the five documentation tools plus `SN-Register-Instance`.
+The bundled Happy Platform MCP v6.1 contract contains exactly 60 live MCP tools. Docs-only startup exposes exactly six docs-only tools: the five documentation tools plus `SN-Register-Instance`.
 
 ---
 

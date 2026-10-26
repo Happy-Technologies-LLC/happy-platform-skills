@@ -37,7 +37,7 @@ jobs:
         run: npm run validate
 
       - name: Run tests
-        run: npm test -- --runInBand
+        run: npm test
 
       - name: Audit production dependencies
         run: npm audit --omit=dev

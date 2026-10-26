@@ -1,6 +1,6 @@
 ---
 name: acl-management
-version: 1.0.1
+version: 1.0.2
 description: Complete access control list management - understanding ACL structure, creating/modifying ACLs, troubleshooting permission issues, and debugging techniques
 author: Happy Technologies LLC
 tags: [security, acl, access-control, permissions, authorization, rbac]
@@ -630,7 +630,7 @@ answer = (hour >= 8 && hour < 18);
 | Create ACL | SN-Create-Record | POST /sys_security_acl |
 | Update ACL | SN-Update-Record | PATCH /sys_security_acl |
 | Add Role | SN-Create-Record | POST /sys_security_acl_role |
-| Debug ACL | SN-Execute-Background-Script | Via sys_trigger |
+| Debug ACL | SN-Execute-Background-Script | POST /sys.scripts.do |
 | Check Schema | SN-Get-Table-Schema | GET /sys_dictionary |
 
 ## Troubleshooting
