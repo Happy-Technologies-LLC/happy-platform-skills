@@ -21,10 +21,18 @@
   <a href="https://www.npmjs.com/package/happy-platform-skills">npm</a> |
   <a href="#available-skills">Skills</a> |
   <a href="CONTRIBUTING.md">Contributing</a> |
+  <a href="https://happy-tech.biz/mcp">Get updates</a> |
   <a href="#support">Support</a>
 </p>
 
 ---
+
+## Stay in the loop
+
+- **Release notes, security advisories, and workshop dates:** [happy-tech.biz/mcp](https://happy-tech.biz/mcp). One list for Happy Platform Skills and the [Happy MCP Server](https://github.com/Happy-Technologies-LLC/happy-platform-mcp). One short email when something ships or needs patching. No drip campaigns.
+- **Questions, ideas, show and tell:** [GitHub Discussions](https://github.com/Happy-Technologies-LLC/happy-platform-mcp/discussions) on the MCP Server repo.
+- **Running the skills at your company?** [Add yourself to the users list](https://github.com/Happy-Technologies-LLC/happy-platform-mcp/issues/new?template=who-is-using.yml) and say you use the skills.
+- **Talk to us:** [happy-tech.biz/contact.html](https://happy-tech.biz/contact.html) for supported releases, team enablement, and AI-native development on the ServiceNow&reg; platform.
 
 ## Support
 
